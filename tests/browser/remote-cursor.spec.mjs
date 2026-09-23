@@ -29,13 +29,22 @@ test("retro tv remote cursor activates on #projects section and displays HUD tel
   // Check visibility
   await expect(cursor).toHaveClass(/is-visible/);
 
-  // Hover over the project heading
+  // Hover over the first project heading (CAMBOSTACK)
   const projectTitle = page.locator(".project-copy h4").first();
   await projectTitle.hover({ force: true });
   await page.waitForTimeout(300);
   await expect(cursor).toHaveClass(/is-aiming/);
   const hud = await cursor.locator(".remote-hud-val").innerText();
   expect(hud).toContain("CAMBOSTACK");
+
+  // Hover over fucuflow project heading
+  const fucuflowHeading = page.locator("#fucuflow h4");
+  await fucuflowHeading.scrollIntoViewIfNeeded();
+  await fucuflowHeading.hover({ force: true });
+  await page.waitForTimeout(300);
+  await expect(cursor).toHaveClass(/is-aiming/);
+  const fucuflowHud = await cursor.locator(".remote-hud-val").innerText();
+  expect(fucuflowHud).toContain("FUCUFLOW");
 
   // Mouse down triggers IR blast and pressing state
   await page.mouse.down();

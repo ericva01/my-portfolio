@@ -26,7 +26,7 @@ npm start
 
 All personal information, education, project descriptions, topic tags, demo paths, captions, and social links live in **`src/data/portfolio.ts`**. Email, phone (display and international dial link), and GitHub are configured with the supplied contact details. Empty optional LinkedIn, repository, and live-demo values do not produce links. Set `personal.siteUrl` to the complete public HTTPS URL to enable the canonical URL and Open Graph URL. No example domain or invented contact information is shipped.
 
-The role and education descriptions reflect the supplied information. The two institutions are SETEC Institute and ISTAD. SETEC is ongoing study; ISTAD contains Full Stack Web Development and ITP - DevOps Engineering. The 50% scholarship belongs only to the Full Stack course. Education programs reference project IDs so titles and descriptions stay consistent with the Projects section. Education panels do not assert a chronological order. CAMBOSTACK and Glideo have empty technology arrays until confirmed technologies are supplied.
+The role and education descriptions reflect the supplied information. The two institutions are SETEC Institute and ISTAD. SETEC is ongoing study; ISTAD contains Full Stack Web Development and ITP - DevOps Engineering. The 50% scholarship belongs only to the Full Stack course. Education programs reference project IDs so titles and descriptions stay consistent with the Projects section. Education panels do not assert a chronological order. CAMBOSTACK and fucuflow have empty technology arrays until confirmed technologies are supplied.
 
 ## Configure demo videos
 
@@ -40,7 +40,7 @@ captions: [
 ],
 ```
 
-The other suggested video path is `/videos/autonomous-demo.mp4`. Glideo has no video area, player, or video placeholder; it uses a pixel-style application window. Paths are relative to `public`; do not include `/public` in URLs. Only enable a path after the file exists. Prefer a broadly supported MP4 encoding and add WebVTT captions for spoken audio.
+The other suggested video path is `/videos/autonomous-demo.mp4`. fucuflow has no video area, player, or video placeholder; it uses a pixel-style application window. Paths are relative to `public`; do not include `/public` in URLs. Only enable a path after the file exists. Prefer a broadly supported MP4 encoding and add WebVTT captions for spoken audio.
 
 `RetroTV` embeds YouTube in a responsive 16:9 `aspect-video` screen with descriptive titles, lazy loading, fullscreen permission, and `strict-origin-when-cross-origin` referrers. Autoplay is disabled and inline mobile playback is enabled. YouTube retains its own controls. No scanlines, filters, pixelation, or playback animations cover either media type; GSAP animates the casing entrance. The dials and power indicator are decorative, not interactive controls.
 
@@ -50,7 +50,7 @@ The optional local-video fallback retains native controls, fullscreen, inline pl
 
 ## Images and styling
 
-Put posters and future images in `public/images/`. Glideo supports an optional `screenshot: { src, alt, width, height }` object (see the commented example in the data file), rendered through `next/image`. Set the real image dimensions and descriptive alt text. Its screenshot and repository link remain hidden until configured; no image file is requested by default. The live project link is configured as https://fucuflow.ericva.site/. Posters belong in `posterSrc` and are handled by the HTML video element. For new content photos, use `next/image` with meaningful alt text and explicit dimensions. Current artwork is inline SVG, so it needs no image download or raster optimization. The favicon is `src/app/icon.svg`.
+Put posters and future images in `public/images/`. fucuflow supports an optional `screenshot: { src, alt, width, height }` object (see the commented example in the data file), rendered through `next/image`. Set the real image dimensions and descriptive alt text. Its screenshot and repository link remain hidden until configured; no image file is requested by default. The live project link is configured as https://fucuflow.ericva.site/. Posters belong in `posterSrc` and are handled by the HTML video element. For new content photos, use `next/image` with meaningful alt text and explicit dimensions. Current artwork is inline SVG, so it needs no image download or raster optimization. The favicon is `src/app/icon.svg`.
 
 The palette, responsive layouts, CRT casing, and focus states are in `src/app/globals.css`. Tailwind is enabled through `@tailwindcss/postcss`. Reusable panels, headings, links, education entries, and project sections are in `src/components/`.
 
@@ -63,7 +63,7 @@ Main text uses dark ink on pale green/off-white; dark sections use light text. D
 ## Before publishing
 
 - Supply the public site URL. Email, phone, and GitHub are already configured; LinkedIn remains hidden.
-- Optionally add a Glideo screenshot and verified repository links. Academic YouTube demos and the Glideo live link are configured.
+- Optionally add a fucuflow screenshot and verified repository links. Academic YouTube demos and the fucuflow live link are configured.
 - Add only confirmed technology tags and any further factual project details.
 - Run lint, type-check, and the production build.
 

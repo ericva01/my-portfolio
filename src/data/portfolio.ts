@@ -66,13 +66,13 @@ export const projects: Project[] = [
     // videoSrc: "/videos/autonomous-demo.mp4",
   },
   {
-    id: "glideo", name: "Glideo", title: "Glideo — Screen Recording with Automatic Animation",
+    id: "fucuflow", name: "fucuflow", title: "fucuflow — Screen Recording with Automatic Animation",
     category: "Personal Project",
     group: "personal",
     liveUrl: "https://fucuflow.ericva.site/",
-    description: "Glideo is a personal screen-recording project that adds automatic animation to recordings.",
+    description: "fucuflow is a personal screen-recording project that adds automatic animation to recordings.",
     tags: [], // Add features, platforms, and technologies only when confirmed.
-    // screenshot: { src: "/images/glideo-screenshot.webp", alt: "Glideo application screenshot", width: 1280, height: 800 },
+    // screenshot: { src: "/images/fucuflow-screenshot.webp", alt: "fucuflow application screenshot", width: 1280, height: 800 },
   },
 ];
 
