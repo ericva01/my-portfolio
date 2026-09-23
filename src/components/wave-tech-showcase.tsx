@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useRef, useState, type CSSProperties } from "react";
 import { technologyCategories } from "@/data/portfolio";
 import { TechLogo } from "@/components/tech-icons";
+import { ScopeGunCursor } from "@/components/scope-gun-cursor";
 
 type Category = (typeof technologyCategories)[number]["name"];
 const technologies = technologyCategories.flatMap((category) =>
@@ -10,6 +11,7 @@ const technologies = technologyCategories.flatMap((category) =>
 );
 
 export function WaveTechShowcase() {
+  const sectionRef = useRef<HTMLElement>(null);
   const [paused, setPaused] = useState(false);
   const [filter, setFilter] = useState<Category | "All">("All");
   const visible = technologies.filter((tech) => filter === "All" || tech.category === filter);
@@ -17,7 +19,8 @@ export function WaveTechShowcase() {
   const rows = Array.from({ length: rowCount }, (_, row) => visible.filter((_, index) => index % rowCount === row));
 
   return (
-    <section id="tech" className="section-space wave-section" aria-labelledby="tech-title">
+    <section ref={sectionRef} id="tech" className="section-space wave-section tech-scope-active" aria-labelledby="tech-title">
+      <ScopeGunCursor targetRef={sectionRef} />
       <div className="container">
         <div className="section-title-row">
           <div className="section-heading">

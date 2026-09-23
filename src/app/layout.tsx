@@ -70,12 +70,21 @@ export const metadata: Metadata = {
     siteName: `${personal.name} Portfolio`,
     locale: "en_US",
     type: "profile",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 675,
+        alt: `${personal.name} — Software Developer & DevOps Explorer`,
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: `${personal.name} — Software Developer`,
+    title: `${personal.name} — Software Developer & DevOps Explorer`,
     description: personal.about,
     creator: "@ericva",
+    images: ["/og-image.jpg"],
   },
   robots: {
     index: true,

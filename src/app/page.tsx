@@ -7,6 +7,7 @@ import { ContactLinks } from "@/components/contact-links";
 import { ContactForm } from "@/components/contact-form";
 import { RetroTVIntro, ReplayIntro } from "@/components/retro-tv-intro";
 import { WaveTechShowcase } from "@/components/wave-tech-showcase";
+import { RetroTVRemoteCursor } from "@/components/retro-tv-remote-cursor";
 
 export default function Home() {
   return (
@@ -94,7 +95,8 @@ export default function Home() {
         <WaveTechShowcase />
 
         {/* ── PROJECTS ──────────────────────────────────────────── */}
-        <section id="projects" className="section-space projects-section">
+        <section id="projects" className="section-space projects-section projects-remote-active">
+          <RetroTVRemoteCursor />
           <div className="container">
             <div className="section-title-row">
               <SectionHeading number="05" label="SELECTED PROJECTS" title="SELECTED WORK." />

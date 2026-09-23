@@ -38,11 +38,11 @@ h2 { font-family: var(--font-mono), monospace; font-weight: 600; font-size: clam
 .logo { font-size: 27px; line-height: 1; letter-spacing: -4px; }
 .logo span, .footer-brand span { color: var(--lcd); }
 .desktop-nav { display: flex; gap: 8px; margin-left: auto; position: relative; }
-.desktop-nav a { font-family: var(--font-pixel), monospace; text-transform: uppercase; font-size: 8px; padding: 16px 13px; border: 1px solid transparent; color: var(--ink); transition: color 150ms; }
+.desktop-nav a { font-family: var(--font-pixel), monospace; text-transform: uppercase; font-size: 8px; padding: 16px 13px; border: 1px solid transparent; color: var(--ink); transition: color 180ms ease, opacity 180ms ease; }
 .desktop-nav a[aria-current], .desktop-nav a:hover { color: var(--lcd); background: transparent; border-color: transparent; box-shadow: none; }
 .desktop-nav .nav-number { display: none; }
-.nav-indicator { position: absolute; left: 0; bottom: 0; height: 2px; background: var(--lcd); pointer-events: none; }
-.scroll-progress { position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background: var(--lcd); transform: scaleX(0); transform-origin: left; pointer-events: none; }
+.nav-indicator { position: absolute; left: 0; bottom: 0; height: 2.5px; background: var(--lcd); box-shadow: 0 0 10px rgba(126, 200, 96, 0.7), 0 0 2px var(--lcd); pointer-events: none; border-radius: 2px; will-change: transform, left, width; }
+.scroll-progress { position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background: var(--lcd); box-shadow: 0 0 8px rgba(126, 200, 96, 0.5); transform: scaleX(0); transform-origin: left; pointer-events: none; will-change: transform; }
 .nav-note { font-size: 9px; border-left: 1px solid var(--border); padding-left: 22px; max-width: 100px; line-height: 1.7; color: var(--muted); }
 .mobile-menu { display: none; }
 .lcd-texture { background-image: none; }
@@ -197,39 +197,57 @@ footer { background: var(--shell); border-top: 1px solid var(--border); }
 .footer-bottom { border-top: 1px solid var(--border); display: flex; justify-content: space-between; gap: 20px; padding-block: 12px; font-size: 9px; color: var(--muted); flex-wrap: wrap; }
 .replay-intro { font-family: var(--font-pixel), monospace; font-size: 7px; padding: 8px 12px; border: 1px solid var(--border); background: transparent; color: var(--muted); letter-spacing: 1px; transition: color 120ms, border-color 120ms; }
 .replay-intro:hover { color: var(--lcd); border-color: var(--lcd); }
-.tv-intro { position: fixed; inset: 0; z-index: 100; width: 100%; max-width: 100%; height: 100vh; max-height: 100vh; margin: 0; padding: 0; border: none; background: rgba(6,8,6,0.97); display: flex; align-items: center; justify-content: center; }
+.tv-intro { position: fixed; inset: 0; z-index: 100; width: 100vw; max-width: 100vw; height: 100vh; max-height: 100dvh; margin: 0; padding: 14px 10px; border: none; background: #060906; background-image: radial-gradient(ellipse at center, rgba(16, 26, 16, 0.92) 0%, rgba(4, 7, 4, 0.98) 75%, #020302 100%), repeating-linear-gradient(to bottom, transparent 0px, transparent 2px, rgba(0, 0, 0, 0.28) 2px, rgba(0, 0, 0, 0.28) 4px); display: flex; align-items: center; justify-content: center; overflow-y: auto; overflow-x: hidden; box-shadow: inset 0 0 120px rgba(0,0,0,0.95); }
 .tv-intro::backdrop { background: transparent; }
-.intro-stage { display: flex; flex-direction: column; align-items: center; gap: 28px; }
-.intro-tv { width: min(440px,90vw); background: #1e261e; border: 2px solid #3a4a3a; border-radius: 16px 16px 8px 8px; box-shadow: 0 0 0 4px #0e130e, 0 12px 40px #00000088, inset 0 1px 0 #4a5a4a; overflow: hidden; }
-.intro-tv-topbar { display: flex; justify-content: space-between; padding: 10px 18px; font-size: 7px; letter-spacing: 1px; background: #161e16; border-bottom: 1px solid #2a3a2a; color: var(--muted); font-family: var(--font-pixel), monospace; }
-.intro-tv-bezel { margin: 14px 18px; border: 6px solid #0e130e; border-bottom-color: #2a3a2a; border-right-color: #2a3a2a; border-radius: 6px; background: #060a06; padding: 4px; }
-.intro-screen { position: relative; background: #060a06; border-radius: 3px; padding: 28px 22px; min-height: 180px; display: flex; align-items: center; justify-content: center; overflow: hidden; transform-origin: center; }
-.intro-scanlines { position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(to bottom, transparent 0px, transparent 3px, rgba(0,0,0,0.18) 3px, rgba(0,0,0,0.18) 4px); border-radius: inherit; z-index: 1; }
-.intro-noise { position: absolute; inset: 0; pointer-events: none; z-index: 2; border-radius: inherit; opacity: 0.04; animation: intro-noise-shift 0.18s steps(1) infinite; }
-@keyframes intro-noise-shift { 0% { background-position: 0 0; } 25% { background-position: 40px -20px; } 50% { background-position: -20px 30px; } 75% { background-position: 30px 10px; } 100% { background-position: -10px -30px; } }
-.intro-screen-content { position: relative; z-index: 3; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.intro-line { margin: 0; font-family: var(--font-pixel), monospace; color: var(--lcd); }
-.intro-line-name { font-size: clamp(14px,3.5vw,22px); letter-spacing: 2px; text-shadow: 0 0 12px var(--lcd); }
-.intro-line-role { font-size: clamp(8px,1.8vw,11px); color: var(--muted); margin-top: 6px; letter-spacing: 2px; }
-.intro-line-ready { font-size: 8px; color: var(--muted); margin-top: 14px; letter-spacing: 3px; opacity: 0.7; }
-.intro-cursor { font-family: var(--font-pixel), monospace; font-size: 14px; color: var(--lcd); animation: cursor-blink 1.4s steps(1) infinite; display: inline-block; margin-top: 4px; }
-.intro-tv-controls { margin: 0 18px 14px; display: flex; align-items: center; gap: 14px; padding-top: 4px; }
-.intro-speaker { flex: 1; height: 24px; background: repeating-linear-gradient(to right, #1a221a 0, #1a221a 2px, transparent 2px, transparent 6px); }
-.intro-dials { display: flex; gap: 10px; }
-.intro-dial { width: 28px; height: 28px; background: #141a14; border: 1px solid var(--border); border-radius: 50%; display: grid; place-items: center; }
-.intro-dial i { height: 16px; width: 2px; background: var(--muted); transform: rotate(35deg); display: block; }
-.intro-dial.small { width: 22px; height: 22px; }
-.intro-dial.small i { height: 12px; transform: rotate(-20deg); }
-.intro-power-light { width: 8px; height: 8px; background: var(--lcd); border-radius: 50%; box-shadow: 0 0 8px var(--lcd); flex-shrink: 0; }
-.intro-power-light.on { animation: power-pulse 2s ease-in-out infinite; }
+.tv-intro:not([open]) { display: none; }
+.intro-stage { margin: auto; width: 100%; max-width: 720px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.intro-tv { width: 100%; background: #182018; border: 3px solid #364636; border-radius: 14px 14px 8px 8px; box-shadow: 0 0 0 3px #0c120c, 0 0 35px rgba(126,200,96,0.1), 0 20px 50px rgba(0,0,0,0.85), inset 0 1px 0 #4e624e; overflow: hidden; position: relative; flex-shrink: 0; }
+.intro-tv-topbar { display: flex; justify-content: space-between; align-items: center; padding: 9px 16px; font-size: 8px; letter-spacing: 1px; background: #121812; border-bottom: 1px solid #283628; color: var(--muted); font-family: var(--font-pixel), monospace; }
+.intro-tv-channel-tag { color: var(--lcd); background: #0a0e0a; border: 1px solid #283628; padding: 2px 8px; border-radius: 3px; font-size: 7px; }
+.intro-tv-bezel { margin: 8px 12px; border: 6px solid #090e09; border-bottom-color: #222d22; border-right-color: #222d22; border-radius: 6px; background: #030503; padding: 2px; box-shadow: inset 0 0 14px rgba(0,0,0,0.9); }
+.intro-screen { position: relative; background: #020302; border-radius: 3px; overflow: hidden; display: block; transform-origin: center; }
+.intro-player { width: 100%; aspect-ratio: 16 / 9; background: #020302; position: relative; z-index: 1; }
+.intro-player iframe { display: block; width: 100%; height: 100%; border: 0; }
+.tv-static-layer { position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; transition: opacity 280ms cubic-bezier(0.4, 0, 0.2, 1); }
+.tv-static-layer.tuned { opacity: 0; }
+.tv-static-layer.no-signal { opacity: 1; }
+.tv-static-canvas { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges; object-fit: cover; }
+.tv-osd { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; padding: 10px 14px; font-family: var(--font-pixel), monospace; color: var(--lcd); text-shadow: 0 0 8px rgba(126,200,96,0.8), 0 0 2px #fff; z-index: 3; user-select: none; }
+.tv-osd-top { display: flex; justify-content: space-between; align-items: center; font-size: 9px; letter-spacing: 1px; }
+.tv-osd-ch { background: rgba(8,12,8,0.85); border: 1px solid var(--lcd); padding: 3px 6px; border-radius: 2px; }
+.tv-osd-badge { font-size: 7px; color: var(--muted); }
+.tv-osd-center { margin: auto; text-align: center; }
+.tv-osd-alert { background: rgba(6,10,6,0.88); border: 2px dashed var(--lcd); padding: 8px 14px; border-radius: 4px; box-shadow: 0 0 16px rgba(0,0,0,0.8), inset 0 0 8px rgba(126,200,96,0.25); display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.tv-osd-warning { font-size: clamp(10px, 2.3vw, 14px); color: #b4f88e; letter-spacing: 2px; animation: tv-osd-blink 1.2s steps(1) infinite; }
+.tv-osd-sub { font-size: clamp(7px, 1.5vw, 8px); color: var(--ink); letter-spacing: 1px; opacity: 0.9; }
+.tv-osd-hint { font-size: 7px; color: var(--lcd); letter-spacing: 1px; margin-top: 2px; }
+.tv-osd-bottom { display: flex; justify-content: space-between; font-size: 7px; color: var(--muted); letter-spacing: 1px; }
+.tv-osd-blink { animation: cursor-blink 1.2s steps(1) infinite; }
+@keyframes tv-osd-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0.25; } }
+.intro-music-controls { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 12px; }
+.intro-play, .intro-mute { min-height: 40px; padding: 8px 12px; border: 1px solid var(--border); background: #0c120c; color: var(--lcd); font-family: var(--font-pixel), monospace; font-size: 8px; letter-spacing: 1px; transition: background 120ms, border-color 120ms; }
+.intro-play { border-color: var(--lcd); flex: 1; }
+.intro-play:hover:not(:disabled), .intro-mute:hover:not(:disabled) { background: #162416; border-color: #a0e080; }
+.intro-play:disabled, .intro-mute:disabled { opacity: 0.45; cursor: not-allowed; }
+.intro-music-status { margin: 6px 12px 8px; min-height: 2.8em; font-size: 11px; line-height: 1.5; color: var(--ink); font-family: var(--font-mono), monospace; }
+.intro-tv-controls { margin: 0 12px 8px; display: flex; align-items: center; gap: 10px; }
+.intro-speaker { flex: 1; height: 16px; background: repeating-linear-gradient(to right, #141c14 0, #141c14 2px, transparent 2px, transparent 6px); }
+.intro-dials { display: flex; gap: 8px; }
+.intro-dial { width: 22px; height: 22px; background: #121812; border: 1px solid var(--border); border-radius: 50%; display: grid; place-items: center; }
+.intro-dial i { height: 12px; width: 2px; background: var(--muted); transform: rotate(35deg); display: block; }
+.intro-dial.small { width: 18px; height: 18px; }
+.intro-dial.small i { height: 9px; transform: rotate(-20deg); }
+.intro-power-light { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.intro-power-light.on { background: var(--lcd); box-shadow: 0 0 10px var(--lcd); animation: power-pulse 1.8s ease-in-out infinite; }
+.intro-power-light.standby { background: #d97706; box-shadow: 0 0 6px #d97706; }
 @keyframes power-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-.intro-tv-bottom { padding: 14px 18px 18px; border-top: 1px solid #2a3a2a; background: #141c14; }
-.intro-enter { display: block; width: 100%; font-family: var(--font-pixel), monospace; font-size: 10px; padding: 14px 20px; letter-spacing: 2px; background: #0e130e; color: var(--lcd); border: 2px solid var(--lcd); box-shadow: 0 0 0 1px #0e130e, inset 0 1px 0 #4a6a4a, 0 4px 0 #0e130e; transition: background 120ms, box-shadow 120ms, transform 80ms; cursor: pointer; }
-.intro-enter:hover { background: #1a2a1a; box-shadow: 0 0 12px var(--lcd), 0 0 0 1px #0e130e, inset 0 1px 0 #4a6a4a, 0 4px 0 #0e130e; }
-.intro-enter:active { transform: translateY(2px); box-shadow: 0 0 0 1px #0e130e, inset 0 1px 0 #4a6a4a, 0 2px 0 #0e130e; }
+.intro-tv-bottom { padding: 10px 12px 12px; border-top: 1px solid #283628; background: #121812; }
+.intro-enter { display: block; width: 100%; font-family: var(--font-pixel), monospace; font-size: 10px; padding: 12px 16px; letter-spacing: 2px; background: #0c120c; color: var(--lcd); border: 2px solid var(--lcd); box-shadow: 0 0 0 1px #0c120c, inset 0 1px 0 #4a6a4a, 0 3px 0 #0c120c; transition: background 120ms, box-shadow 120ms, transform 80ms; cursor: pointer; text-align: center; }
+.intro-enter:hover { background: #182818; box-shadow: 0 0 12px var(--lcd), 0 0 0 1px #0c120c, inset 0 1px 0 #4a6a4a, 0 3px 0 #0c120c; }
+.intro-enter:active { transform: translateY(2px); box-shadow: 0 0 0 1px #0c120c, inset 0 1px 0 #4a6a4a, 0 1px 0 #0c120c; }
 .intro-enter:focus-visible { outline: 2px solid var(--lcd); outline-offset: 4px; }
 .intro-enter > span { font-family: var(--font-mono), monospace; font-size: 16px; }
-.intro-skip { font-family: var(--font-mono), monospace; font-size: 11px; color: var(--muted); border-bottom: 1px solid transparent; padding-bottom: 2px; transition: color 120ms, border-color 120ms; }
+.intro-skip { font-family: var(--font-mono), monospace; font-size: 11px; color: var(--muted); border-bottom: 1px solid transparent; padding-bottom: 2px; transition: color 120ms, border-color 120ms; min-height: 38px; display: inline-flex; align-items: center; }
 .intro-skip:hover { color: var(--ink); border-color: var(--muted); }
 .intro-skip:focus-visible { outline: 2px solid var(--lcd); outline-offset: 4px; }
 @media (min-width: 1500px) { .container { width: min(1220px, calc(100% - 120px)); } .hero-grid { min-height: 650px; } }
@@ -358,30 +376,448 @@ footer { background: var(--shell); border-top: 1px solid var(--border); }
 @media (max-width: 480px) { .contact-form { padding: 20px; } .contact-field-row { grid-template-columns: 1fr; } .contact-form input, .contact-form textarea { font-size: 16px; } }
 
 
-/* YouTube stays unobstructed; CRT decoration belongs to the casing. */
-.tv-intro { height: 100dvh; max-height: 100dvh; overflow-y: auto; padding: 20px 12px; }
-.tv-intro:not([open]) { display: none; }
-.intro-stage { margin: auto; width: 100%; gap: 16px; }
-.intro-tv { width: min(620px, 100%); flex-shrink: 0; }
-.intro-tv-topbar { position: relative; overflow: hidden; }
-.intro-screen { display: block; padding: 0; min-height: 0; border-radius: 0; overflow: visible; }
-.intro-player { width: 100%; aspect-ratio: 16 / 9; background: #060a06; }
-.intro-player iframe { display: block; width: 100%; height: 100%; border: 0; }
-.intro-music-controls { display: flex; flex-wrap: wrap; gap: 10px; padding: 0 18px; }
-.intro-play, .intro-mute { min-height: 44px; padding: 10px 12px; border: 1px solid var(--border); background: #0e130e; color: var(--lcd); font-family: var(--font-mono), monospace; font-size: 12px; }
-.intro-play { border-color: var(--lcd); flex: 1; }
-.intro-play:disabled, .intro-mute:disabled { opacity: 0.5; cursor: not-allowed; }
-.intro-music-status { margin: 12px 18px 16px; min-height: 3.6em; font-size: 12px; line-height: 1.8; color: var(--ink); }
-.intro-skip { min-height: 44px; display: inline-flex; align-items: center; }
+/* Retro TV Intro adjustments */
 @media (max-width: 480px) {
-  .tv-intro { padding-inline: 6px; }
-  .intro-tv-bezel { margin: 12px 4px; border-width: 2px; padding: 0; }
-  .intro-tv-topbar { padding-inline: 12px; }
-  .intro-enter { font-size: 9px; letter-spacing: 1px; }
+  .tv-intro { padding: 6px 4px; }
+  .intro-tv { border-width: 2px; }
+  .intro-tv-topbar { padding: 6px 10px; font-size: 7px; }
+  .intro-tv-channel-tag { font-size: 6px; padding: 1px 5px; }
+  .intro-tv-bezel { margin: 6px 4px; border-width: 2px; padding: 0; }
+  .tv-osd { padding: 6px 8px; }
+  .tv-osd-alert { padding: 6px 8px; }
+  .tv-osd-warning { font-size: 9px; letter-spacing: 1px; }
+  .tv-osd-sub { font-size: 6px; }
+  .tv-osd-hint { font-size: 6px; }
+  .tv-osd-bottom { font-size: 6px; }
+  .intro-enter { font-size: 9px; padding: 10px 12px; letter-spacing: 1px; }
+  .intro-music-status { font-size: 10px; min-height: 2.2em; margin: 4px 8px 6px; }
+  .intro-music-controls { padding: 0 8px; }
+  .intro-play, .intro-mute { min-height: 36px; padding: 6px 8px; font-size: 7px; }
 }
-@media (max-height: 650px) and (min-width: 600px) {
-  .intro-tv { width: 460px; }
+@media (max-height: 700px) {
+  .intro-stage { gap: 6px; }
   .intro-tv-controls { display: none; }
-  .intro-stage { gap: 4px; }
-  .intro-music-status { margin-block: 8px; min-height: 0; }
+  .intro-tv-bezel { margin: 6px 10px; }
+  .intro-music-status { margin: 4px 10px; min-height: 0; font-size: 10px; }
 }
+
+/* Mobile dropdown smooth slide-down */
+.mobile-menu[open] nav {
+  animation: mobile-nav-drop 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes mobile-nav-drop {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── SCOPE GUN CURSOR FOR TECH STACK SECTION ──────────────────────── */
+@media (hover: hover) and (pointer: fine) {
+  .tech-scope-active,
+  .tech-scope-active * {
+    cursor: none !important;
+  }
+}
+
+.scope-gun-cursor,
+.scope-gun-cursor * {
+  pointer-events: none !important;
+}
+
+.scope-gun-cursor {
+  position: fixed;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  will-change: left, top;
+  user-select: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.scope-gun-cursor.is-visible {
+  opacity: 1;
+}
+
+.scope-reticle-wrap {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.scope-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 0 6px rgba(126, 200, 96, 0.75));
+}
+
+.scope-ring-outer {
+  fill: none;
+  stroke: rgba(126, 200, 96, 0.55);
+  stroke-width: 1.2;
+  stroke-dasharray: 12 4;
+}
+
+.scope-ring-inner {
+  fill: rgba(10, 16, 10, 0.2);
+  stroke: rgba(126, 200, 96, 0.35);
+  stroke-width: 1;
+}
+
+.scope-bracket {
+  fill: none;
+  stroke: var(--lcd);
+  stroke-width: 1.6;
+  stroke-linecap: square;
+}
+
+.scope-crosshair {
+  stroke: var(--lcd);
+  stroke-width: 1.4;
+  stroke-linecap: square;
+}
+
+.scope-tick {
+  stroke: var(--lcd);
+  stroke-width: 1;
+}
+
+.scope-tick.wide {
+  stroke-width: 1.2;
+}
+
+.scope-tick.wider {
+  stroke-width: 1.4;
+}
+
+.scope-tick.widest {
+  stroke-width: 1.6;
+}
+
+.scope-center-dot {
+  fill: #ff4747;
+  filter: drop-shadow(0 0 3px #ff2222);
+  transition: fill 0.15s ease;
+}
+
+.scope-muzzle-flash {
+  position: absolute;
+  inset: -14px;
+  border-radius: 50%;
+  border: 2px solid #a0f070;
+  background: radial-gradient(circle, rgba(160, 240, 112, 0.45) 0%, transparent 70%);
+  opacity: 0;
+  transform: scale(0.6);
+  pointer-events: none;
+}
+
+.scope-hud {
+  position: absolute;
+  top: -8px;
+  left: 76px;
+  background: rgba(10, 15, 10, 0.9);
+  border: 1px solid var(--lcd);
+  border-radius: 3px;
+  padding: 4px 7px;
+  font-family: var(--font-pixel), monospace;
+  font-size: 7px;
+  white-space: nowrap;
+  color: var(--lcd);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.7), inset 0 0 6px rgba(126, 200, 96, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transition: border-color 0.18s ease, color 0.18s ease, transform 0.2s ease;
+}
+
+.scope-hud-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 6px;
+  color: var(--muted);
+  border-bottom: 1px solid rgba(126, 200, 96, 0.3);
+  padding-bottom: 2px;
+}
+
+.scope-hud-mode {
+  color: var(--lcd);
+  font-weight: bold;
+}
+
+.scope-hud-zoom {
+  color: var(--muted);
+}
+
+.scope-hud-target {
+  font-size: 7px;
+  letter-spacing: 0.5px;
+}
+
+/* Locked state when hovering over a technology badge */
+.scope-gun-cursor.is-locked .scope-reticle-wrap {
+  transform: scale(0.88) rotate(45deg);
+}
+
+.scope-gun-cursor.is-locked .scope-hud {
+  transform: rotate(-45deg);
+  border-color: #a0f070;
+  background: rgba(14, 24, 14, 0.95);
+  box-shadow: 0 0 14px rgba(126, 200, 96, 0.5), inset 0 0 8px rgba(126, 200, 96, 0.3);
+}
+
+.scope-gun-cursor.is-locked .scope-ring-outer {
+  stroke: #a0f070;
+  stroke-dasharray: none;
+  animation: scope-locked-spin 6s linear infinite;
+}
+
+.scope-gun-cursor.is-locked .scope-center-dot {
+  fill: #a0f070;
+  filter: drop-shadow(0 0 4px #a0f070);
+}
+
+.scope-gun-cursor.is-locked .scope-hud-mode {
+  color: #a0f070;
+  animation: cursor-blink 0.8s steps(1) infinite;
+}
+
+@keyframes scope-locked-spin {
+  from { transform: rotate(0deg); transform-origin: center; }
+  to { transform: rotate(360deg); transform-origin: center; }
+}
+
+/* Firing / recoil pulse */
+.scope-gun-cursor.is-firing .scope-reticle-wrap {
+  animation: scope-recoil 0.22s ease-out;
+}
+
+.scope-gun-cursor.is-firing .scope-muzzle-flash {
+  animation: muzzle-burst 0.22s ease-out;
+}
+
+@keyframes scope-recoil {
+  0% { transform: scale(1.24) translateY(-5px); }
+  50% { transform: scale(0.92) translateY(1px); }
+  100% { transform: scale(1) translateY(0); }
+}
+
+@keyframes muzzle-burst {
+  0% { opacity: 1; transform: scale(0.7); }
+  60% { opacity: 0.8; transform: scale(1.35); }
+  100% { opacity: 0; transform: scale(1.6); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scope-gun-cursor { display: none !important; }
+  .tech-scope-active, .tech-scope-active * { cursor: auto !important; }
+}
+
+/* ── RETRO TV CONTROLLER CURSOR FOR SELECTED WORK SECTION ──────────── */
+@media (hover: hover) and (pointer: fine) {
+  .projects-remote-active,
+  .projects-remote-active * {
+    cursor: none !important;
+  }
+}
+
+.tv-remote-cursor,
+.tv-remote-cursor * {
+  pointer-events: none !important;
+}
+
+.tv-remote-cursor {
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  will-change: transform;
+  user-select: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.tv-remote-cursor.is-visible {
+  opacity: 1;
+}
+
+.remote-wrap {
+  position: relative;
+  width: 38px;
+  height: 88px;
+  transform-origin: 19px 4px;
+  transform: translate(-19px, -4px) rotate(-10deg);
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.75)) drop-shadow(0 0 8px rgba(126, 200, 96, 0.2));
+}
+
+.remote-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.remote-btn-power {
+  filter: drop-shadow(0 0 3px rgba(225, 29, 72, 0.7));
+}
+
+.remote-ir-diode {
+  transition: filter 0.15s ease, fill 0.15s ease;
+  filter: drop-shadow(0 0 3px rgba(225, 29, 72, 0.8));
+}
+
+/* Infrared blast waves radiating outward on click */
+.remote-ir-blast {
+  position: absolute;
+  left: 19px;
+  top: 4px;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.remote-ir-blast .ir-wave {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 50% 50% 0 0;
+  border: 2px solid #ff4444;
+  border-bottom: none;
+  opacity: 0;
+  transform: translate(-50%, -100%) scale(0.4);
+}
+
+.tv-remote-cursor.is-pressing .remote-ir-blast .wave-1 {
+  animation: ir-beam-wave 0.26s ease-out forwards;
+}
+
+.tv-remote-cursor.is-pressing .remote-ir-blast .wave-2 {
+  animation: ir-beam-wave 0.26s ease-out 0.05s forwards;
+}
+
+.tv-remote-cursor.is-pressing .remote-ir-blast .wave-3 {
+  animation: ir-beam-wave 0.26s ease-out 0.1s forwards;
+}
+
+@keyframes ir-beam-wave {
+  0% {
+    width: 14px;
+    height: 8px;
+    opacity: 1;
+    transform: translate(-50%, -100%) scale(0.4);
+    border-color: #ffffff;
+  }
+  50% {
+    opacity: 0.85;
+    border-color: #ff3b30;
+  }
+  100% {
+    width: 52px;
+    height: 30px;
+    opacity: 0;
+    transform: translate(-50%, -150%) scale(1.6);
+    border-color: #e11d48;
+  }
+}
+
+/* Aiming state when hovering over a TV, project row, or button */
+.tv-remote-cursor.is-aiming .remote-wrap {
+  transform: translate(-19px, -4px) rotate(0deg) scale(1.05);
+}
+
+.tv-remote-cursor.is-aiming .remote-ir-diode {
+  filter: drop-shadow(0 0 8px #ff2222) drop-shadow(0 0 14px #ff0033);
+  animation: ir-diode-pulse 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes ir-diode-pulse {
+  from { filter: drop-shadow(0 0 5px #ff2222); }
+  to { filter: drop-shadow(0 0 12px #ff4444) drop-shadow(0 0 18px rgba(255, 68, 68, 0.7)); }
+}
+
+/* Pressing / Click state */
+.tv-remote-cursor.is-pressing .remote-wrap {
+  transform: translate(-19px, -2px) rotate(0deg) scale(0.96);
+}
+
+.tv-remote-cursor.is-pressing .remote-ir-diode {
+  fill: #ffffff !important;
+  filter: drop-shadow(0 0 12px #ffffff) drop-shadow(0 0 22px #ff2222);
+}
+
+/* Floating HUD telemetry attached to the remote */
+.remote-hud {
+  position: absolute;
+  top: 8px;
+  left: 44px;
+  background: rgba(10, 16, 10, 0.94);
+  border: 1px solid var(--lcd);
+  border-radius: 3px;
+  padding: 4px 7px;
+  font-family: var(--font-pixel), monospace;
+  font-size: 7px;
+  white-space: nowrap;
+  color: var(--lcd);
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.8), inset 0 0 6px rgba(126, 200, 96, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transition: border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.remote-hud-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 6px;
+  color: var(--muted);
+  border-bottom: 1px solid rgba(126, 200, 96, 0.28);
+  padding-bottom: 2px;
+}
+
+.remote-hud-ir {
+  color: #e11d48;
+  font-weight: bold;
+}
+
+.remote-hud-mode {
+  color: var(--muted);
+}
+
+.remote-hud-val {
+  font-size: 7px;
+  letter-spacing: 0.5px;
+}
+
+.tv-remote-cursor.is-aiming .remote-hud {
+  border-color: #a0f070;
+  background: rgba(14, 24, 14, 0.96);
+  box-shadow: 0 0 14px rgba(126, 200, 96, 0.45), inset 0 0 8px rgba(126, 200, 96, 0.25);
+}
+
+.tv-remote-cursor.is-aiming .remote-hud-ir {
+  color: #ff3344;
+  animation: cursor-blink 0.6s steps(1) infinite;
+}
+
+.tv-remote-cursor.is-pressing .remote-hud {
+  border-color: #ff4747;
+  color: #ff8585;
+  box-shadow: 0 0 16px rgba(255, 71, 71, 0.6), inset 0 0 8px rgba(255, 71, 71, 0.3);
+}
+
+.tv-remote-cursor.is-pressing .remote-hud-mode {
+  color: #ff4747;
+  font-weight: bold;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tv-remote-cursor { display: none !important; }
+  .projects-remote-active, .projects-remote-active * { cursor: auto !important; }
+}
+
+
+

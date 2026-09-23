@@ -29,6 +29,70 @@ export function RetroTVIntro() {
   return open ? <IntroDialog onFinish={() => setOpen(false)} /> : null;
 }
 
+function TVStaticCanvas({ active }: { active: boolean }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d", { alpha: false });
+    if (!ctx) return;
+
+    // 160x90 resolution scaled with image-rendering: pixelated for authentic chunky 90s TV snow
+    const width = 160;
+    const height = 90;
+    canvas.width = width;
+    canvas.height = height;
+
+    const imgData = ctx.createImageData(width, height);
+    const buf = new Uint32Array(imgData.data.buffer);
+    const len = buf.length;
+
+    let animId: number;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const render = () => {
+      for (let i = 0; i < len; i++) {
+        const val = (Math.random() * 255) | 0;
+        if (Math.random() < 0.006) {
+          // Phosphor green burst pixel
+          buf[i] = 0xff30c060;
+        } else {
+          // Grayscale snow with subtle CRT green tint
+          const g = Math.min(255, val + 14);
+          buf[i] = 0xff000000 | (val << 16) | (g << 8) | val;
+        }
+      }
+
+      // Horizontal static drift / sync glitch bar
+      if (Math.random() < 0.18) {
+        const glitchY = (Math.random() * (height - 3)) | 0;
+        const glitchH = 1 + ((Math.random() * 2) | 0);
+        for (let y = glitchY; y < Math.min(height, glitchY + glitchH); y++) {
+          const row = y * width;
+          for (let x = 0; x < width; x++) {
+            buf[row + x] = Math.random() < 0.5 ? 0xfff0fff0 : 0xff0a120a;
+          }
+        }
+      }
+
+      ctx.putImageData(imgData, 0, 0);
+
+      if (!reduced && active) {
+        animId = requestAnimationFrame(render);
+      }
+    };
+
+    render();
+    if (!reduced && active) {
+      animId = requestAnimationFrame(render);
+    }
+    return () => cancelAnimationFrame(animId);
+  }, [active]);
+
+  return <canvas ref={canvasRef} className="tv-static-canvas" aria-hidden="true" />;
+}
+
 function IntroDialog({ onFinish }: { onFinish: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const host = useRef<HTMLDivElement>(null);
@@ -36,6 +100,7 @@ function IntroDialog({ onFinish }: { onFinish: () => void }) {
   const stopPlayer = useRef<() => void>(() => {});
   const busy = useRef(false);
   const [ready, setReady] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
   const [status, setStatus] = useState("Loading music controls. You can enter the portfolio at any time.");
   const { contextSafe } = useGSAP({ scope: dialog });
@@ -66,6 +131,7 @@ function IntroDialog({ onFinish }: { onFinish: () => void }) {
     const fallback = () => {
       if (disposed) return;
       setReady(false);
+      setIsPlaying(false);
       setStatus("Intro music is unavailable. Try the YouTube controls, or enter the portfolio.");
     };
     const timeout = window.setTimeout(fallback, 20000);
@@ -98,14 +164,26 @@ function IntroDialog({ onFinish }: { onFinish: () => void }) {
         },
         onStateChange: (event) => {
           if (disposed) return;
-          if (event.data === 1) setStatus("Intro music is playing. Enter the portfolio whenever you're ready.");
-          if (event.data === 2) setStatus("Music paused. Use PLAY INTRO MUSIC to resume.");
-          if (event.data === 0) setStatus("Music finished. Replay it or enter the portfolio.");
+          if (event.data === 1) {
+            setIsPlaying(true);
+            setStatus("Intro music is playing. Enter the portfolio whenever you're ready.");
+          }
+          if (event.data === 2) {
+            setIsPlaying(false);
+            setStatus("Music paused. Use PLAY INTRO MUSIC to resume.");
+          }
+          if (event.data === 0) {
+            setIsPlaying(false);
+            setStatus("Music finished. Replay it or enter the portfolio.");
+          }
           setMuted(event.target.isMuted());
         },
         onError: () => { window.clearTimeout(timeout); fallback(); },
         onAutoplayBlocked: () => {
-          if (!disposed) setStatus("Your browser blocked playback. Press Play in the YouTube player, or enter the portfolio.");
+          if (!disposed) {
+            setIsPlaying(true);
+            setStatus("Your browser blocked playback. Press Play in the YouTube player, or enter the portfolio.");
+          }
         },
       } });
     }).catch(fallback);
@@ -116,6 +194,7 @@ function IntroDialog({ onFinish }: { onFinish: () => void }) {
     if (!ready || busy.current || !player.current) return;
     try {
       setStatus("Starting music. If it doesn't start, press Play in the YouTube player.");
+      setIsPlaying(true);
       // Synchronous calls preserve the visitor's click gesture.
       player.current.unMute();
       player.current.setVolume(70);
@@ -145,11 +224,11 @@ function IntroDialog({ onFinish }: { onFinish: () => void }) {
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const tl = gsap.timeline({ onComplete: finish });
       if (!reduced) {
-        tl.to(".intro-tv-topbar", { x: 3, duration: 0.06, repeat: 3, yoyo: true, ease: "none" })
-          .to(".intro-screen", { scaleY: 0.015, opacity: 0.6, duration: 0.3, ease: "power3.in" })
-          .to(".intro-screen", { opacity: 0, duration: 0.12 });
+        tl.to(".intro-tv-topbar", { x: 3, duration: 0.05, repeat: 3, yoyo: true, ease: "none" })
+          .to(".intro-screen", { scaleY: 0.015, filter: "brightness(2.5)", opacity: 0.7, duration: 0.25, ease: "power3.in" })
+          .to(".intro-screen", { scaleX: 0, opacity: 0, duration: 0.12, ease: "power2.in" });
       }
-      tl.to(dialog.current, { opacity: 0, duration: reduced ? 0 : 0.3 });
+      tl.to(dialog.current, { opacity: 0, duration: reduced ? 0 : 0.25 });
     })();
   };
 
@@ -158,19 +237,53 @@ function IntroDialog({ onFinish }: { onFinish: () => void }) {
     <div className="intro-stage">
       <div className="intro-tv">
         <div className="intro-tv-topbar">
-          <span className="intro-scanlines" aria-hidden="true" /><span className="intro-noise" aria-hidden="true" />
-          <span id="intro-title">{personal.name.toUpperCase()} / INTRO</span><span aria-hidden="true">EV / 01</span>
+          <span id="intro-title">{personal.name.toUpperCase()} / CRT BROADCAST</span>
+          <span className="intro-tv-channel-tag" aria-hidden="true">
+            CH 03 &bull; {isPlaying ? "TUNED" : "NO SIGNAL"}
+          </span>
+          <span aria-hidden="true">EV / 01</span>
         </div>
-        <div className="intro-tv-bezel"><div className="intro-screen"><div className="intro-player" ref={host} /></div></div>
+        <div className="intro-tv-bezel">
+          <div className="intro-screen">
+            <div className={`tv-static-layer ${isPlaying ? "tuned" : "no-signal"}`} aria-hidden="true">
+              <TVStaticCanvas active={!isPlaying} />
+              <div className="tv-osd">
+                <div className="tv-osd-top">
+                  <span className="tv-osd-ch">CH 03</span>
+                  <span className="tv-osd-badge">NTSC-M &bull; MONO</span>
+                </div>
+                <div className="tv-osd-center">
+                  <div className="tv-osd-alert">
+                    <span className="tv-osd-warning">▲ NO SIGNAL ▲</span>
+                    <span className="tv-osd-sub">NO SENSOR / TUNER DISCONNECTED</span>
+                    <span className="tv-osd-hint">&gt;&gt; PRESS PLAY INTRO MUSIC &lt;&lt;</span>
+                  </div>
+                </div>
+                <div className="tv-osd-bottom">
+                  <span>SEARCHING FREQUENCY 55.25 MHz</span>
+                  <span className="tv-osd-blink">_</span>
+                </div>
+              </div>
+            </div>
+            <div className="intro-player" ref={host} />
+          </div>
+        </div>
         <div className="intro-music-controls">
           <button type="button" className="intro-play" onClick={play} disabled={!ready}>PLAY INTRO MUSIC</button>
           <button type="button" className="intro-mute" onClick={toggleMute} disabled={!ready}>{muted ? "UNMUTE MUSIC" : "MUTE MUSIC"}</button>
         </div>
         <p className="intro-music-status" id="intro-description" role="status" aria-live="polite">{status}</p>
         <div className="intro-tv-controls" aria-hidden="true">
-          <div className="intro-speaker" /><div className="intro-dials"><div className="intro-dial"><i /></div><div className="intro-dial small"><i /></div></div><span className="intro-power-light on" />
+          <div className="intro-speaker" />
+          <div className="intro-dials">
+            <div className="intro-dial"><i /></div>
+            <div className="intro-dial small"><i /></div>
+          </div>
+          <span className={`intro-power-light ${isPlaying ? "on" : "standby"}`} />
         </div>
-        <div className="intro-tv-bottom"><button type="button" className="intro-enter" onClick={dismiss}>ENTER PORTFOLIO<span aria-hidden="true"> &crarr;</span></button></div>
+        <div className="intro-tv-bottom">
+          <button type="button" className="intro-enter" onClick={dismiss}>ENTER PORTFOLIO<span aria-hidden="true"> &crarr;</span></button>
+        </div>
       </div>
       <a className="intro-skip" href="#main" onClick={(event) => { event.preventDefault(); dismiss(); }}>Skip intro</a>
     </div>
