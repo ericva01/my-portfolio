@@ -32,7 +32,7 @@ export const personal = {
   email: "ericva014@gmail.com",
   phone: { number: "017679097", display: "017 679 097", href: "tel:+85517679097" },
   github: "https://github.com/ericva01",
-  linkedin: "",
+  linkedin: "https://www.linkedin.com/in/eric-va-b38456303/",
   siteUrl: "", // Set your full https:// domain before publishing, or provide NEXT_PUBLIC_SITE_URL.
 };
 
@@ -69,7 +69,7 @@ export const projects: Project[] = [
     group: "academic", videoDemo: true,
     youtubeEmbedUrl: "https://www.youtube.com/embed/PTHQW7glYrc",
     description: "CAMBOSTACK is a collaborative forum where Khmer developers and students can learn, share knowledge, and grow together in a trusted, supportive community.",
-    tags: [], // Add verified technologies here.
+    tags: ["Spring Boot", "Next.js", "PostgreSQL", "Docker"],
     // videoSrc: "/videos/cambostack-demo.mp4",
     // posterSrc: "/images/cambostack-poster.webp",
     // captions: [{ src: "/videos/cambostack-en.vtt", srcLang: "en", label: "English", default: true }],
@@ -88,8 +88,8 @@ export const projects: Project[] = [
     category: "Personal Project",
     group: "personal",
     liveUrl: "https://fucuflow.ericva.site/",
-    description: "fucuflow is a personal screen-recording project that adds automatic animation to recordings.",
-    tags: [], // Add features, platforms, and technologies only when confirmed.
+    description: "fucuflow is a screen-recording project with automatic zoom and motion animation. Built with Next.js for the web platform and Tauri for the cross-platform desktop application.",
+    tags: ["Next.js", "Tauri", "Desktop App", "TypeScript"],
     // screenshot: { src: "/images/fucuflow-screenshot.webp", alt: "fucuflow application screenshot", width: 1280, height: 800 },
   },
 ];

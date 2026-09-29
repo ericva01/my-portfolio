@@ -13,7 +13,7 @@ export function ContactLinks() {
     {personal.email && <><a className="retro-button contact-email" href={`mailto:${personal.email}`}><ContactIcon kind="email" />{personal.email}</a><button className="retro-button secondary" onClick={copyEmail}><ContactIcon kind="copy" />COPY EMAIL</button></>}
     {personal.phone.href && <a className="retro-button secondary" href={personal.phone.href}><ContactIcon kind="phone" />{personal.phone.display}</a>}
     {personal.github && <a className="retro-button secondary" href={personal.github} target="_blank" rel="noopener noreferrer"><ContactIcon kind="github" />GITHUB<span className="sr-only"> (opens in a new tab)</span></a>}
-    {personal.linkedin && <a className="retro-button secondary" href={personal.linkedin}>LINKEDIN <span aria-hidden="true">↗</span></a>}
+    {personal.linkedin && <a className="retro-button secondary" href={personal.linkedin} target="_blank" rel="noopener noreferrer">LINKEDIN <span aria-hidden="true">↗</span><span className="sr-only"> (opens in a new tab)</span></a>}
     {!personal.email && !personal.phone.href && !personal.github && !personal.linkedin && <p className="contact-pending"><span aria-hidden="true">[ + ]</span> Contact links coming soon.</p>}
     <p className="copy-feedback" role="status" aria-live="polite">{feedback}</p>
   </div>;

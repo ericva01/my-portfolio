@@ -118,11 +118,11 @@ export default function RootLayout({
         "@id": `${siteUrl}/#person`,
         name: personal.name,
         jobTitle: personal.role,
-        description: personal.about,
+        description: personal.seoDescription,
         email: personal.email,
         telephone: personal.phone.href,
         url: siteUrl,
-        sameAs: [personal.github].filter(Boolean),
+        sameAs: [personal.github, personal.linkedin].filter(Boolean),
         knowsAbout: [
           "DevOps Engineering",
           "Kubernetes",
