@@ -26,13 +26,31 @@ export const personal = {
   direction: "DevOps Engineering",
   introduction: "I build web applications, explore DevOps, and create tools that make everyday work easier.",
   about: "I currently work as a Software Developer at a private company while developing my knowledge of DevOps engineering. I’m interested in how thoughtful software and reliable deployment practices can make everyday work easier.",
+  seoDescription:
+    "Software Developer focused on web apps and DevOps engineering. Building thoughtful software, reliable deployments, and practical tools.",
   interests: ["Web development", "DevOps engineering", "Practical tools"],
   email: "ericva014@gmail.com",
   phone: { number: "017679097", display: "017 679 097", href: "tel:+85517679097" },
   github: "https://github.com/ericva01",
   linkedin: "",
-  siteUrl: "", // Set your full https:// domain before publishing.
+  siteUrl: "", // Set your full https:// domain before publishing, or provide NEXT_PUBLIC_SITE_URL.
 };
+
+export function getBaseSiteUrl(): string {
+  const envUrl =
+    process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : "") ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
+
+  const configured = personal.siteUrl?.trim();
+  const raw = envUrl || configured || "https://ericva.dev";
+  const url = raw.startsWith("http://") || raw.startsWith("https://")
+    ? raw
+    : `https://${raw}`;
+  return url.replace(/\/+$/, "");
+}
 
 export const education: Education[] = [
   { name: "SETEC Institute", programs: [

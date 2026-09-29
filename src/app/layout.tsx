@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Press_Start_2P, IBM_Plex_Mono } from "next/font/google";
-import { personal } from "@/data/portfolio";
+import { personal, getBaseSiteUrl } from "@/data/portfolio";
 import "./globals.css";
 
 const pixel = Press_Start_2P({
@@ -19,7 +19,7 @@ const mono = IBM_Plex_Mono({
   fallback: ["Courier New", "monospace"],
 });
 
-const siteUrl = personal.siteUrl?.trim() || "https://ericva.dev";
+const siteUrl = getBaseSiteUrl();
 
 export const viewport: Viewport = {
   themeColor: "#0e110e",
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     default: `${personal.name} | Software Developer & DevOps Explorer`,
     template: `%s | ${personal.name}`,
   },
-  description: personal.about,
+  description: personal.seoDescription,
   applicationName: `${personal.name} Portfolio`,
   authors: [{ name: personal.name, url: personal.github }],
   generator: "Next.js",
@@ -64,8 +64,8 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: `${personal.name} — Software Developer & DevOps Explorer`,
-    description: personal.about,
+    title: `${personal.name} - Software Developer & DevOps Explorer`,
+    description: personal.seoDescription,
     url: siteUrl,
     siteName: `${personal.name} Portfolio`,
     locale: "en_US",
@@ -75,14 +75,14 @@ export const metadata: Metadata = {
         url: "/og-image.jpg",
         width: 1200,
         height: 675,
-        alt: `${personal.name} — Software Developer & DevOps Explorer`,
+        alt: `${personal.name} - Software Developer & DevOps Explorer`,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: `${personal.name} — Software Developer & DevOps Explorer`,
-    description: personal.about,
+    title: `${personal.name} - Software Developer & DevOps Explorer`,
+    description: personal.seoDescription,
     creator: "@ericva",
     images: ["/og-image.jpg"],
   },

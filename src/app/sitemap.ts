@@ -1,8 +1,8 @@
 import type { MetadataRoute } from "next";
-import { personal } from "@/data/portfolio";
+import { getBaseSiteUrl } from "@/data/portfolio";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = personal.siteUrl?.trim() || "https://ericva.dev";
+  const baseUrl = getBaseSiteUrl();
   return [
     {
       url: baseUrl,
