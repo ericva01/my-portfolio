@@ -22,6 +22,8 @@ import {
   SiNextdotjs,
   SiTailwindcss,
   SiFigma,
+  SiTraefikproxy,
+  SiNginx,
 } from "react-icons/si";
 import { FaJava, FaCss3Alt } from "react-icons/fa6";
 import { TbDevices, TbLayoutDashboard } from "react-icons/tb";
@@ -39,6 +41,10 @@ const ICON_MAP: Record<string, IconType> = {
   grafana: SiGrafana,
   docker: SiDocker,
   git: SiGit,
+  traefik: SiTraefikproxy,
+  traefix: SiTraefikproxy,
+  traefikproxy: SiTraefikproxy,
+  nginx: SiNginx,
   java: FaJava,
   springboot: SiSpringboot,
   spring: SiSpringboot,

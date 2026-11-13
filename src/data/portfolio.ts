@@ -11,7 +11,7 @@ export type EducationProgram = { course: string; description: string; status?: s
 export type Education = { name: string; programs: EducationProgram[] };
 export const introConfig = { sessionKey: "eric-va:intro-seen:v1", enabled: true };
 export const technologyCategories = [
-  { name: "DevOps", symbol: "[>]", topics: ["Jenkins", "K8s", "K3s", "ArgoCD", "Ansible", "Terraform", "Grafana", "Docker", "Git"] },
+  { name: "DevOps", symbol: "[>]", topics: ["Jenkins", "K8s", "K3s", "ArgoCD", "Ansible", "Terraform", "Grafana", "Docker", "Git", "Traefik", "Nginx"] },
   { name: "Backend", symbol: "{ }", topics: ["Java", "Spring Boot"] },
   { name: "Databases", symbol: "[=]", topics: ["PostgreSQL", "MySQL", "MongoDB"] },
   { name: "Frontend", symbol: "</>", topics: ["HTML", "CSS", "JavaScript", "TypeScript", "React", "Next.js", "Tailwind CSS"] },

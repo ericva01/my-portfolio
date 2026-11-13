@@ -8,6 +8,7 @@ import { ContactForm } from "@/components/contact-form";
 import { RetroTVIntro, ReplayIntro } from "@/components/retro-tv-intro";
 import { WaveTechShowcase } from "@/components/wave-tech-showcase";
 import { RetroTVRemoteCursor } from "@/components/retro-tv-remote-cursor";
+import { PixelBuddy } from "@/components/pixel-buddy";
 
 export default function Home() {
   return (
@@ -143,6 +144,7 @@ export default function Home() {
           <span aria-hidden="true">[ END ]</span>
         </div>
       </footer>
+      <PixelBuddy />
     </Motion>
   );
 }
