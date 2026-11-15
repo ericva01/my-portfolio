@@ -1292,34 +1292,65 @@ footer { background: var(--shell); border-top: 1px solid var(--border); }
 
 /* ── PIXEL BUDDY (walking avatar) ─────────────────────────── */
 .pixel-buddy { position: fixed; left: 0; bottom: 10px; z-index: 40; width: 72px; transform: translate3d(-100px, 0, 0); pointer-events: none; will-change: transform; animation: buddy-fade-in 400ms ease both; }
-.buddy-body { display: block; width: 72px; height: 108px; padding: 0; border: 0; background: none; pointer-events: auto; cursor: pointer; filter: drop-shadow(0 0 6px rgba(126, 200, 96, 0.18)); }
+.buddy-body { display: block; width: 72px; height: 108px; padding: 0; border: 0; background: none; pointer-events: auto; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; filter: drop-shadow(0 0 6px rgba(126, 200, 96, 0.18)); }
 .buddy-body:focus-visible { outline: 2px dashed var(--lcd); outline-offset: 4px; }
-.buddy-jump, .buddy-mood, .buddy-flip { display: block; width: 100%; height: 100%; }
+html.buddy-grabbing, html.buddy-grabbing * { cursor: grabbing !important; user-select: none !important; }
+.buddy-tilt, .buddy-jump, .buddy-mood, .buddy-flip { display: block; width: 100%; height: 100%; }
+.buddy-tilt { transform: rotate(var(--tilt, 0deg)); transform-origin: 50% 12%; transition: transform 140ms ease-out; }
 .buddy-flip { transform-origin: 50% 100%; transition: transform 120ms steps(2); }
-.buddy-sprite { display: block; width: 100%; height: 100%; image-rendering: pixelated; transform-origin: 50% 100%; }
+.buddy-sprite { display: block; width: 100%; height: 100%; image-rendering: pixelated; transform-origin: 50% 100%; transition: transform 90ms steps(2); }
 .buddy-flip.is-bob .buddy-sprite { transform: translateY(-2px); }
 .buddy-flip.is-running .buddy-sprite { transform: skewX(-8deg); animation: buddy-run-bob 160ms steps(2) infinite; }
 .buddy-jump.is-jumping { animation: buddy-jump 420ms steps(6) both; }
 .mood-happy .buddy-mood { animation: buddy-happy-hop 700ms steps(4) 2; }
 .mood-tipsy .buddy-mood { transform-origin: 50% 100%; animation: buddy-wobble 1.6s ease-in-out infinite; }
+.mood-dizzy .buddy-mood { transform-origin: 50% 100%; animation: buddy-wobble 0.9s ease-in-out infinite; }
+.pixel-buddy[data-state="held"] .buddy-sprite { animation: buddy-dangle 0.5s ease-in-out infinite alternate; }
+.pixel-buddy[data-state="held"] .buddy-body { cursor: grabbing; }
+.pixel-buddy[data-state="land"] .buddy-sprite { transform: scale(1.14, 0.78); }
+.pixel-buddy[data-state="angry"] .buddy-mood { animation: buddy-stomp 0.28s steps(2) infinite; }
+.pixel-buddy[data-state="sit"] .buddy-body { filter: drop-shadow(0 0 6px rgba(126, 200, 96, 0.28)); }
 .buddy-wave-arm { transform-box: fill-box; transform-origin: 50% 100%; animation: buddy-wave 320ms steps(2) infinite alternate; }
 .buddy-drink-arm { transform-box: fill-box; transform-origin: 100% 100%; animation: buddy-sip 500ms steps(2) infinite alternate; }
+.buddy-reach { animation: buddy-reach 300ms steps(2) infinite alternate; }
+.buddy-flail { animation: buddy-reach 120ms steps(2) infinite alternate; }
+.buddy-ground-shadow { position: fixed; left: 0; bottom: 6px; z-index: 39; width: 52px; height: 9px; border-radius: 50%; background: radial-gradient(closest-side, #000c, #0000); pointer-events: none; transform-origin: 50% 50%; will-change: transform, opacity; }
 
 /* Emotes above the head */
 .buddy-emote { position: absolute; right: 2px; bottom: calc(100% - 8px); pointer-events: none; }
 .emote-bang { width: 9px; height: 21px; right: 6px; filter: drop-shadow(0 0 4px #f6cf6299); animation: emote-pop 300ms steps(3) both, emote-shake 240ms steps(2) 300ms 4; }
+.emote-bang.emote-double { width: 21px; }
 .emote-hearts { width: 30px; height: 40px; }
 .emote-hearts svg { position: absolute; bottom: 0; left: 6px; width: 14px; height: 12px; opacity: 0; animation: emote-heart 1.4s steps(7) infinite; }
 .emote-hearts svg:nth-child(2) { left: 16px; }
 .emote-hearts svg:nth-child(3) { left: 0; }
 .emote-hic { right: -8px; font-family: var(--font-pixel), monospace; font-size: 7px; color: #f6cf62; text-shadow: 1px 1px 0 #000; animation: emote-hic 1.8s steps(6) infinite; }
+.emote-angry { left: 0; right: 0; height: 30px; }
+.anger-mark { position: absolute; right: -2px; top: -6px; width: 20px; height: 20px; filter: drop-shadow(0 0 4px #ff4d4daa); animation: emote-throb 0.5s steps(2) infinite; }
+.steam { position: absolute; bottom: -18px; width: 6px; height: 6px; background: #e8ece4; box-shadow: 6px -6px 0 -1px #e8ece4aa; opacity: 0; animation: emote-steam 0.9s steps(5) infinite; }
+.steam.s1 { left: 8px; } .steam.s2 { left: 2px; animation-delay: 0.45s; }
+.steam.s3 { right: 10px; animation-delay: 0.2s; } .steam.s4 { right: 4px; animation-delay: 0.65s; }
+.emote-sweat { width: 9px; height: 12px; right: 8px; bottom: calc(100% - 30px); animation: emote-sweat 1.2s steps(4) infinite; }
+.emote-dizzy { left: 50%; right: auto; bottom: calc(100% - 22px); width: 0; height: 0; }
+.emote-dizzy svg { position: absolute; left: -6px; top: -6px; width: 12px; height: 12px; animation: emote-orbit 1s linear infinite; }
 
 /* Speech bubble */
 .buddy-bubble { position: absolute; bottom: calc(100% + 18px); left: 20px; width: max-content; max-width: min(260px, calc(100vw - 40px)); padding: 11px 13px; background: var(--paper); color: var(--shell); font-family: var(--font-pixel), monospace; font-size: 8px; line-height: 1.8; border: 2px solid var(--shell); box-shadow: 0 0 0 2px var(--lcd), 4px 4px 0 2px #000a; pointer-events: none; animation: buddy-pop 180ms steps(3) both; }
+.buddy-bubble.is-angry { background: #ffe9e4; color: #8a1c12; box-shadow: 0 0 0 2px #ff4d4d, 4px 4px 0 2px #000a; animation: buddy-pop 180ms steps(3) both, emote-shake 120ms steps(2) 180ms 6; }
 .buddy-bubble::after { content: ""; position: absolute; top: 100%; left: 10px; width: 8px; height: 8px; background: var(--paper); box-shadow: 2px 0 0 var(--shell), 0 2px 0 var(--shell), 2px 2px 0 var(--lcd); clip-path: polygon(0 0, 100% 0, 0 100%); }
+.buddy-bubble.is-angry::after { background: #ffe9e4; }
 .buddy-bubble.align-right { left: auto; right: 20px; }
 .buddy-bubble.align-right::after { left: auto; right: 10px; clip-path: polygon(0 0, 100% 0, 100% 100%); }
-.buddy-caret { display: inline-block; width: 6px; height: 9px; margin-left: 3px; vertical-align: -1px; background: var(--shell); animation: cursor-blink 0.8s steps(1) infinite; }
+.buddy-caret { display: inline-block; width: 6px; height: 9px; margin-left: 3px; vertical-align: -1px; background: currentColor; animation: cursor-blink 0.8s steps(1) infinite; }
+
+/* Desk */
+.buddy-desk { position: fixed; bottom: 10px; z-index: 38; width: 108px; height: 72px; pointer-events: none; animation: buddy-fade-in 400ms ease both; }
+.buddy-desk-art { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+.buddy-desk.is-on .buddy-desk-art { filter: drop-shadow(0 -2px 10px #7ec86040); }
+.code-line { transform-box: fill-box; transform-origin: 0 50%; animation: code-type 1.8s steps(6) infinite; }
+.code-line.l2 { animation-delay: 0.45s; } .code-line.l3 { animation-delay: 0.9s; } .code-line.l4 { animation-delay: 1.35s; }
+.desk-idle-cursor { animation: cursor-blink 1s steps(1) infinite; }
+.desk-steam { animation: treat-steam 1.2s steps(3) infinite; } .desk-steam.d2 { animation-delay: 0.6s; }
 
 /* Snack tray + treats */
 .snack-tray { position: fixed; right: 16px; bottom: 132px; z-index: 41; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 10px 8px 9px; background: #121712ee; border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 0 0 1px #000, 4px 4px 0 #0008; backdrop-filter: blur(8px); }
@@ -1340,15 +1371,23 @@ footer { background: var(--shell); border-top: 1px solid var(--border); }
 @keyframes buddy-jump { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-18px); } 60% { transform: translateY(-14px); } }
 @keyframes buddy-happy-hop { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 @keyframes buddy-wobble { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+@keyframes buddy-stomp { 0% { transform: translate(-2px, 0); } 100% { transform: translate(2px, -2px); } }
+@keyframes buddy-dangle { from { transform: rotate(-6deg); } to { transform: rotate(6deg); } }
 @keyframes buddy-run-bob { from { translate: 0 0; } to { translate: 0 -3px; } }
 @keyframes buddy-wave { from { transform: rotate(-14deg); } to { transform: rotate(16deg); } }
+@keyframes buddy-reach { from { transform: translateY(0); } to { transform: translateY(-1px); } }
 @keyframes buddy-sip { from { transform: rotate(0deg); } to { transform: rotate(-12deg); } }
 @keyframes buddy-pop { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 @keyframes buddy-fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes emote-pop { from { transform: translateY(8px) scale(0.4); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes emote-shake { 0%, 100% { translate: 0 0; } 50% { translate: 2px 0; } }
+@keyframes emote-throb { from { transform: scale(0.85); } to { transform: scale(1.15); } }
+@keyframes emote-steam { 0% { opacity: 0; transform: translateY(0) scale(0.6); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(-22px) scale(1.2); } }
+@keyframes emote-sweat { 0% { opacity: 0; transform: translateY(-4px); } 30%, 70% { opacity: 1; } 100% { opacity: 0; transform: translateY(8px); } }
+@keyframes emote-orbit { from { transform: rotate(0deg) translateX(22px) rotate(0deg) scaleY(0.6); } to { transform: rotate(360deg) translateX(22px) rotate(-360deg) scaleY(0.6); } }
 @keyframes emote-heart { 0% { opacity: 0; transform: translateY(0) scale(0.6); } 20% { opacity: 1; transform: translateY(-6px) scale(1); } 100% { opacity: 0; transform: translateY(-30px) scale(0.8); } }
 @keyframes emote-hic { 0%, 60%, 100% { opacity: 0; transform: translateY(0); } 70%, 90% { opacity: 1; transform: translateY(-6px); } }
+@keyframes code-type { 0% { transform: scaleX(0); } 70%, 100% { transform: scaleX(1); } }
 @keyframes treat-fall { from { transform: translateY(var(--fall, 0px)); } to { transform: translateY(0); } }
 @keyframes treat-bounce { 0%, 100% { translate: 0 0; } 50% { translate: 0 -6px; } }
 @keyframes treat-steam { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
@@ -1357,14 +1396,16 @@ footer { background: var(--shell); border-top: 1px solid var(--border); }
   .pixel-buddy { width: 54px; bottom: 6px; }
   .buddy-body { width: 54px; height: 81px; }
   .buddy-bubble { font-size: 7px; max-width: 200px; }
+  .buddy-desk { width: 81px; height: 54px; bottom: 6px; }
+  .buddy-ground-shadow { bottom: 3px; }
   .snack-tray { right: 10px; bottom: 104px; padding: 8px 6px; gap: 6px; }
   .snack-item { width: 38px; height: 38px; }
   .snack-item .treat-sprite { width: 24px; height: 24px; }
   .treat-floor { bottom: 6px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .pixel-buddy, .buddy-wave-arm, .buddy-drink-arm, .buddy-jump.is-jumping, .buddy-bubble, .mood-happy .buddy-mood, .mood-tipsy .buddy-mood,
-  .buddy-emote, .emote-hearts svg, .floor-treat, .treat-coffee rect { animation: none; }
-  .emote-hearts svg { opacity: 1; }
+  .pixel-buddy, .buddy-wave-arm, .buddy-drink-arm, .buddy-jump.is-jumping, .buddy-bubble, .mood-happy .buddy-mood, .mood-tipsy .buddy-mood, .mood-dizzy .buddy-mood,
+  .pixel-buddy[data-state] .buddy-mood, .pixel-buddy[data-state] .buddy-sprite, .buddy-emote, .buddy-emote *, .floor-treat, .treat-coffee rect, .code-line, .desk-steam { animation: none; }
+  .emote-hearts svg, .steam { opacity: 1; }
 }
-@media print { .pixel-buddy, .snack-tray, .treat-floor { display: none; } }
+@media print { .pixel-buddy, .snack-tray, .treat-floor, .buddy-desk, .buddy-ground-shadow { display: none; } }
