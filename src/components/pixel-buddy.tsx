@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { BattleHud, BossBattle, BossSprite, type HeroView, type HudSnapshot, type Skill } from "./buddy-battle";
 
 /* ─────────────────────────────────────────────────────────────
    Pixel Eric — an 8-bit avatar that lives at the bottom of the
@@ -14,6 +15,8 @@ const BASE: Record<string, string> = {
   R: "#e27d74", W: "#eef0ea", N: "#34476b", n: "#25334f", P: "#232c40", B: "#0d0f0d", C: "#6b4f3a", c: "#4a3527",
 };
 const ANGRY_SKIN = { S: "#e0806a", s: "#bf5d48", R: "#c94040" };
+const POWER_UP = { H: "#57d13f", h: "#d4ffc4", E: "#f2fff0" };
+const POWER_HAIR = ["...H..H..H..H...", "..HHhHHhHHhHHH..", ".HHHHHHhhHHHHHH."];
 
 const HEAD = [
   ".....HHHHHH.....",
@@ -65,11 +68,15 @@ const SIT_BODY = [
 ];
 const SIT_LEGS = ["..nPPPPPPPPPPPP.", ".CCCCCCCC..PPP..", ".C.....C..BBBB.."];
 
-type Pose = "idle" | "step" | "pass" | "wave" | "drink" | "held1" | "held2" | "fall" | "land" | "sit1" | "sit2" | "cross";
-type Emotion = "neutral" | "happy" | "excited" | "tipsy" | "angry" | "annoyed" | "dizzy" | "scared";
+type Pose = "idle" | "step" | "pass" | "wave" | "drink" | "held1" | "held2" | "fall" | "land" | "sit1" | "sit2" | "cross"
+  | "punch" | "cast" | "charge" | "watch1" | "watch2";
+type Emotion = "neutral" | "happy" | "excited" | "tipsy" | "angry" | "annoyed" | "dizzy" | "scared" | "fierce" | "watching";
 type Treat = "coffee" | "beer";
 type FloorItem = { id: number; kind: Treat; x: number; fall: number };
-type Mode = "free" | "held" | "falling" | "working";
+type Mode = "free" | "held" | "falling" | "working" | "watching" | "battle";
+
+const WATCH_BODY = ["...NNNWWWWNNN...", "..NNNNnWWnNNNN..", "..NNNNNnnNNNNN..", "..nNNNNNNNNNNn.."];
+const WATCH_LEGS = ["..PPPPPPPPPPPP..", ".BBPPPPPPPPPPBB."];
 
 const setAt = (row: string, changes: Record<number, string>) => row.split("").map((c, i) => changes[i] ?? c).join("");
 
@@ -105,6 +112,17 @@ function face(emotion: Emotion, blink: boolean, talking: boolean, pose: Pose) {
       r[6] = setAt(r[6], { 4: "s", 10: "s" });
       r[9] = "...SSSSMMMSSS...";
       break;
+    case "fierce":
+      r[4] = setAt(r[4], { 4: "E", 11: "E" });
+      r[5] = setAt(r[5], { 5: "E", 6: "E", 9: "E", 10: "E" });
+      r[9] = "...SSSMMMMSSS...";
+      break;
+    case "watching":
+      // eyes look up at the screen
+      r[5] = setAt(r[5], { 4: "E", 5: "E", 10: "E", 11: "E" });
+      r[6] = r[6].replace(/E/g, "S");
+      if (blink) r[5] = r[5].replace(/E/g, "s");
+      break;
     case "dizzy":
       r[5] = setAt(r[5], { 3: "E", 5: "E", 10: "E", 12: "E" });
       r[6] = setAt(r[6], { 4: "E", 5: "S", 10: "S", 11: "E" });
@@ -118,8 +136,13 @@ function face(emotion: Emotion, blink: boolean, talking: boolean, pose: Pose) {
   return r;
 }
 
-function buildRows(pose: Pose, emotion: Emotion, blink: boolean, talking: boolean) {
-  const head = face(emotion, blink, talking, pose);
+function buildRows(pose: Pose, emotion: Emotion, blink: boolean, talking: boolean, powered: boolean) {
+  const head = face(emotion, blink, talking || pose === "watch2", pose);
+  if (powered) head.splice(0, 3, ...POWER_HAIR);
+  if (pose === "watch1" || pose === "watch2") {
+    const empty = "................";
+    return [empty, empty, empty, empty, empty, empty, ...head, ...WATCH_BODY, ...WATCH_LEGS];
+  }
   if (pose === "sit1" || pose === "sit2") {
     const body = [...SIT_BODY];
     if (pose === "sit2") body[3] = "..NNNNNNNNNNNNSS";
@@ -129,9 +152,11 @@ function buildRows(pose: Pose, emotion: Emotion, blink: boolean, talking: boolea
   }
   let body = BODY;
   if (pose === "cross") body = BODY_CROSS;
+  else if (pose === "punch") body = BODY.map((row, y) => (y === 3 ? "..NNNNNNNNNNNNSS" : y === 6 ? "..SNNNNNNNNNNn.." : row));
+  else if (pose === "cast") body = BODY.map((row, y) => (y === 3 || y === 4 ? "..NNNNNNNNNNNNSS" : y === 6 ? "..nNNNNNNNNNNn.." : row));
   else if (pose === "wave" || pose === "drink") body = BODY.map((row, y) => (y === 6 ? "..SNNNNNNNNNNn.." : row));
   else if (pose === "held1" || pose === "held2" || pose === "fall") body = BODY.map((row, y) => (y === 6 ? "..nNNNNNNNNNNn.." : row));
-  const legs = pose === "step" ? LEGS.step : pose === "pass" ? LEGS.pass : pose === "held1" || pose === "fall" ? LEGS.dangle1 : pose === "held2" ? LEGS.dangle2 : LEGS.idle;
+  const legs = pose === "step" || pose === "punch" || pose === "cast" || pose === "charge" ? LEGS.step : pose === "pass" ? LEGS.pass : pose === "held1" || pose === "fall" ? LEGS.dangle1 : pose === "held2" ? LEGS.dangle2 : LEGS.idle;
   return [...head, ...body, ...legs];
 }
 
@@ -165,12 +190,34 @@ function TreatSprite({ kind }: { kind: Treat }) {
   );
 }
 
-function Sprite({ pose, emotion, blink, talking, held }: { pose: Pose; emotion: Emotion; blink: boolean; talking: boolean; held: Treat | null }) {
-  const palette = emotion === "angry" ? { ...BASE, ...ANGRY_SKIN } : BASE;
+function Sprite({ pose, emotion, blink, talking, held, powered }: { pose: Pose; emotion: Emotion; blink: boolean; talking: boolean; held: Treat | null; powered: boolean }) {
+  const palette = { ...BASE, ...(emotion === "angry" ? ANGRY_SKIN : {}), ...(powered ? POWER_UP : {}) };
   const armsUp = pose === "held1" || pose === "held2" || pose === "fall";
+  const watching = pose === "watch1" || pose === "watch2";
   return (
     <svg viewBox="0 0 16 24" className="buddy-sprite" shapeRendering="crispEdges" aria-hidden="true">
-      {pixels(buildRows(pose, emotion, blink, talking), palette)}
+      {pixels(buildRows(pose, emotion, blink, talking, powered), palette)}
+      {watching && (
+        <g className="buddy-popcorn">
+          {/* hands holding the bucket */}
+          <rect x="3" y="20" width="2" height="1" fill={palette.S} />
+          <rect x="11" y="20" width="2" height="1" fill={palette.S} />
+          {/* striped bucket */}
+          <rect x="5" y="19" width="6" height="5" fill="#f4efe6" />
+          <rect x="5" y="19" width="1" height="5" fill="#d23a3a" /><rect x="7" y="19" width="1" height="5" fill="#d23a3a" /><rect x="9" y="19" width="1" height="5" fill="#d23a3a" />
+          <rect x="5" y="19" width="6" height="1" fill="#b02a2a" />
+          {/* popcorn */}
+          <rect x="5" y="18" width="6" height="1" fill="#fff3c4" /><rect x="6" y="17" width="1" height="1" fill="#fff3c4" />
+          <rect x="8" y="17" width="2" height="1" fill="#fff3c4" /><rect x="7" y="18" width="1" height="1" fill="#f6cf62" /><rect x="9" y="17" width="1" height="1" fill="#f6cf62" />
+          {pose === "watch2" && (
+            <>
+              <rect x="11" y="15" width="2" height="5" fill={BASE.N} />
+              <rect x="9" y="14" width="3" height="2" fill={palette.S} />
+              <rect x="9" y="15" width="1" height="1" fill="#fff3c4" />
+            </>
+          )}
+        </g>
+      )}
       {pose === "wave" && (
         <g className="buddy-wave-arm">
           <rect x="13" y="7" width="2" height="6" fill={BASE.N} />
@@ -312,6 +359,10 @@ const HARD_LAND = ["Ouch!! My code!", "Ow... seeing stars...", "That was a hard 
 const WORK_START = ["Time to code!", "Back to work!", "Let's fix some bugs."];
 const WORK_LINES = ["kubectl apply -f eric.yaml", "Fixing a bug...", "Writing a Dockerfile...", "git push --force? No no no.", "Pipeline is green!"];
 const WORK_POKE = ["Shh, I'm coding!", "Busy deploying!", "One sec, almost done!"];
+const WATCH_START = ["Ooh, movie time!", "Grab a seat, the demo's on!", "Popcorn ready!"];
+const WATCH_LINES = ["*munch munch*", "Wait... I built this!", "Press play! I wanna watch!", "This part is my favourite.", "Best. Demo. Ever.", "Whoa, look at that deploy!"];
+const WATCH_POKE = ["Shh! The movie's on!", "No spoilers please!", "Hey, I'm watching!"];
+const WATCH_END = ["That was a good demo!", "Roll the credits!", "10/10 would watch again."];
 const SPOT_LINES: Record<Treat, string[]> = {
   coffee: ["COFFEE?! Wait for me!", "Is that coffee?! Mine!", "Caffeine detected!"],
   beer: ["Ooh, a cold one!", "Is it Friday already?!", "Cheers incoming!"],
@@ -334,6 +385,19 @@ const buddyHeight = (el: HTMLElement | null) => (el ? el.querySelector<HTMLEleme
 const maxXFor = (el: HTMLElement | null) => Math.max(16, window.innerWidth - buddyWidth(el) - 16);
 const deskXFor = () => Math.round(Math.min(Math.max(window.innerWidth * 0.6, 240), window.innerWidth - 230));
 
+/** Center X of the project TV nearest the middle of the viewport, or null when none is on screen. */
+function findTvCenter(): number | null {
+  const vh = window.innerHeight;
+  let best: { x: number; d: number } | null = null;
+  document.querySelectorAll<HTMLElement>("#projects .tv").forEach((tv) => {
+    const r = tv.getBoundingClientRect();
+    if (r.height === 0 || r.top > vh * 0.72 || r.bottom < vh * 0.28) return;
+    const d = Math.abs(r.top + r.height / 2 - vh / 2);
+    if (!best || d < best.d) best = { x: r.left + r.width / 2, d };
+  });
+  return best ? (best as { x: number; d: number }).x : null;
+}
+
 export function PixelBuddy() {
   const [ready, setReady] = useState(false);
   const [nearRight, setNearRight] = useState(false);
@@ -351,6 +415,18 @@ export function PixelBuddy() {
   const [items, setItems] = useState<FloorItem[]>([]);
   const [drag, setDrag] = useState<{ kind: Treat; x: number; y: number } | null>(null);
   const [deskX, setDeskX] = useState(0);
+  const [hud, setHud] = useState<HudSnapshot | null>(null);
+  const [powered, setPowered] = useState(false);
+  const [bossLine, setBossLine] = useState("");
+  const [bossEnraged, setBossEnraged] = useState(false);
+
+  const battle = useRef<BossBattle | null>(null);
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const bossEl = useRef<HTMLDivElement>(null);
+  const bossLineTimer = useRef(0);
+  const tvTarget = useRef<number | null>(null);
+  const goingToTv = useRef(false);
+  const watchTalkAt = useRef(0);
 
   const root = useRef<HTMLDivElement>(null);
   const shadow = useRef<HTMLDivElement>(null);
@@ -417,6 +493,14 @@ export function PixelBuddy() {
 
   /* Drop a treat onto the floor. */
   const dropTreat = useCallback((kind: Treat, clientX: number, clientY: number) => {
+    const b = battle.current;
+    if (b) {
+      // Mid-fight a treat is an instant power-up instead of a snack on the floor.
+      const w = buddyWidth(root.current);
+      b.treat(kind, x.current + w / 2, y.current + buddyHeight(root.current) * 0.6, performance.now());
+      say(kind === "coffee" ? "Coffee! HP restored!" : "Liquid courage!! Energy up!");
+      return;
+    }
     const floorTop = window.innerHeight - FLOOR - 32;
     const itemX = Math.min(Math.max(clientX, 24), window.innerWidth - 24);
     const item: FloorItem = { id: nextId.current++, kind, x: itemX, fall: Math.max(0, floorTop - (clientY - 16)) };
@@ -470,6 +554,34 @@ export function PixelBuddy() {
     let lastWorking = false;
     let lastState = "";
     let workTalkAt = 0;
+    let nextTvScan = 0;
+    let nextHud = 0;
+    let lastEnraged = false;
+    const pixelFont = getComputedStyle(document.body).getPropertyValue("--font-pixel").trim() || "monospace";
+    const battleIO = {
+      say: (text: string) => say(text),
+      feel: (e: "fierce" | "happy" | "scared" | "dizzy" | "excited" | "neutral", ms: number) => feel(e, ms),
+      bossSay: (text: string) => {
+        setBossLine(text);
+        window.clearTimeout(bossLineTimer.current);
+        bossLineTimer.current = window.setTimeout(() => setBossLine(""), 2200);
+      },
+      powered: (on: boolean) => setPowered(on),
+    };
+    const endBattle = (now: number) => {
+      battle.current = null;
+      setHud(null);
+      setPowered(false);
+      setBossLine("");
+      setBossEnraged(false);
+      lastEnraged = false;
+      mode.current = "free";
+      y.current = 0;
+      target.current = null;
+      pauseUntil.current = now + 1500;
+      canvas.current?.getContext("2d")?.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      if (emotionRef.current === "dizzy" || emotionRef.current === "fierce") feel("neutral", 10);
+    };
     const setPoseOnce = (p: Pose) => { if (p !== lastPose) { lastPose = p; setPose(p); } };
     const setRunningOnce = (r: boolean) => { if (r !== lastRunning) { lastRunning = r; setRunning(r); } };
     const setWorkingOnce = (w: boolean) => { if (w !== lastWorking) { lastWorking = w; setWorking(w); } };
@@ -514,6 +626,49 @@ export function PixelBuddy() {
       const seatX = deskRef.current - 12 * s;
       let isRunning = false;
       let state = "free";
+
+      // Look for an on-screen project TV a few times per second.
+      if (now > nextTvScan) { nextTvScan = now + 400; tvTarget.current = findTvCenter(); }
+      const tvGoal = tvTarget.current === null ? null : Math.min(Math.max(tvTarget.current - w / 2, 0), maxX());
+
+      /* ── Boss battle takes over the whole loop ── */
+      const b = battle.current;
+      if (b) {
+        const h = buddyHeight(el);
+        const hero: HeroView = { x: x.current, y: y.current, w, h, pose: "idle", facing: 1, state: "battle" };
+        b.update(now, dt, hero, battleIO);
+        x.current = hero.x;
+        y.current = hero.y;
+        setPoseOnce(hero.pose as Pose);
+        setFacing(hero.facing);
+        setRunningOnce(false);
+        setWorkingOnce(false);
+        const ctx = canvas.current?.getContext("2d");
+        const off = ctx ? b.draw(ctx, hero, now, pixelFont) : { sx: 0, sy: 0 };
+        if (el) {
+          el.style.transform = `translate3d(${x.current + off.sx}px, ${-y.current + off.sy}px, 0)`;
+          const st = `b-${hero.state}`;
+          if (st !== lastState) { lastState = st; el.dataset.state = st; }
+        }
+        const be = bossEl.current;
+        if (be) {
+          be.style.transform = `translate3d(${b.bossX + off.sx}px, ${-b.bossY + off.sy}px, 0)`;
+          be.dataset.v = `${b.bossFrame}${b.mouth ? 1 : 0}`;
+          be.classList.toggle("is-hit", now < b.bossHitUntil);
+          be.classList.toggle("is-visible", b.bossVisible && !b.bossDead);
+          be.classList.toggle("is-dying", b.phase === "victory");
+        }
+        if (shadow.current) {
+          const k = Math.max(0.25, 1 - y.current / 420);
+          shadow.current.style.transform = `translate3d(${x.current + w / 2 - 26}px, 0, 0) scale(${k})`;
+          shadow.current.style.opacity = String(0.2 + 0.35 * k);
+        }
+        if (now > nextHud) { nextHud = now + 90; setHud(b.snapshot(now)); }
+        if (b.enraged !== lastEnraged) { lastEnraged = b.enraged; setBossEnraged(b.enraged); }
+        if (b.ended) endBattle(now);
+        frame = requestAnimationFrame(tick);
+        return;
+      }
 
       if (mode.current === "held") {
         state = "held";
@@ -566,6 +721,38 @@ export function PixelBuddy() {
       } else if (angry) {
         state = "angry";
         setPoseOnce("cross");
+      } else if (mode.current === "watching") {
+        state = "watch";
+        if (tvGoal === null) {
+          mode.current = "free";
+          setPoseOnce("idle");
+          setJump((j) => j + 1);
+          say(pick(WATCH_END));
+          feel("happy", 1800);
+          pauseUntil.current = now + 2500;
+        } else if (Math.abs(tvGoal - x.current) > 150) {
+          mode.current = "free";
+          goingToTv.current = true;
+          target.current = tvGoal;
+          say("Next channel!");
+        } else {
+          const cycle = clock % 1.8;
+          setPoseOnce(cycle < 0.45 ? "watch2" : "watch1");
+          if (emotionRef.current === "neutral") { emotionRef.current = "watching"; setEmotionState("watching"); }
+          if (now > watchTalkAt.current && !busy) {
+            watchTalkAt.current = now + 6500 + Math.random() * 5000;
+            if (Math.random() < 0.6) {
+              const line = pick(WATCH_LINES);
+              say(line);
+              if (line.startsWith("Whoa") || line.startsWith("Wait")) feel("excited", 1600);
+            }
+          }
+        }
+      } else if (mode.current === "working" && tvGoal !== null && !reduced.current) {
+        stopWorking();
+        goingToTv.current = true;
+        target.current = tvGoal;
+        say("Ooh, a demo is on!");
       } else if (mode.current === "working") {
         state = "sit";
         setFacing(1);
@@ -580,9 +767,17 @@ export function PixelBuddy() {
         }
       } else if (now < waveUntil.current) {
         setPoseOnce("wave");
-      } else if (target.current !== null && (!busy || goingToDesk.current) && !reduced.current) {
+      } else if (target.current !== null && (!busy || goingToDesk.current || goingToTv.current) && !reduced.current) {
+        if (goingToTv.current) {
+          if (tvGoal === null) { goingToTv.current = false; target.current = x.current; }
+          else target.current = tvGoal;
+        } else if (tvGoal !== null) {
+          goingToDesk.current = false;
+          goingToTv.current = true;
+          target.current = tvGoal;
+        }
         const far = Math.abs(target.current - x.current) > 380;
-        const run = goingToDesk.current && far;
+        const run = (goingToDesk.current || goingToTv.current) && far;
         const speed = run ? RUN_SPEED * 0.8 : SPEED * boost * (tipsy ? 0.7 : 1);
         isRunning = run;
         const cadence = run ? 0.08 : boost > 1 ? 0.1 : 0.14;
@@ -590,7 +785,12 @@ export function PixelBuddy() {
         if (walkTo(target.current, dt, speed)) {
           target.current = null;
           setPoseOnce("idle");
-          if (goingToDesk.current) {
+          if (goingToTv.current) {
+            goingToTv.current = false;
+            mode.current = "watching";
+            watchTalkAt.current = now + 4000;
+            say(pick(WATCH_START));
+          } else if (goingToDesk.current) {
             goingToDesk.current = false;
             mode.current = "working";
             workUntil.current = now + 9000 + Math.random() * 8000;
@@ -603,7 +803,10 @@ export function PixelBuddy() {
         }
       } else {
         setPoseOnce("idle");
-        if (!busy && !reduced.current && target.current === null && now > pauseUntil.current) {
+        if (tvGoal !== null && target.current === null) {
+          if (reduced.current) { x.current = tvGoal; mode.current = "watching"; watchTalkAt.current = now + 4000; }
+          else { goingToTv.current = true; target.current = tvGoal; }
+        } else if (!busy && !reduced.current && target.current === null && now > pauseUntil.current) {
           if (now > nextWorkAt.current && Math.random() < 0.6) {
             goingToDesk.current = true;
             target.current = seatX;
@@ -617,6 +820,7 @@ export function PixelBuddy() {
         }
       }
 
+      if (mode.current !== "watching" && emotionRef.current === "watching") { emotionRef.current = "neutral"; setEmotionState("neutral"); }
       setRunningOnce(isRunning);
       setWorkingOnce(mode.current === "working");
       if (mode.current !== "held" && mode.current !== "falling") x.current = Math.min(Math.max(x.current, -100), maxX() + 20);
@@ -675,7 +879,7 @@ export function PixelBuddy() {
         const first = lastSection.current === "";
         lastSection.current = id;
         const now = performance.now();
-        if (first || itemsRef.current.length > 0 || now < drinkUntil.current || now < angryUntil.current || mode.current !== "free" && mode.current !== "working") return;
+        if (first || battle.current || itemsRef.current.length > 0 || now < drinkUntil.current || now < angryUntil.current || mode.current !== "free" && mode.current !== "working") return;
         say(pick(SECTION_LINES[id]));
       });
     }, { rootMargin: "-40% 0px -40% 0px" });
@@ -702,7 +906,7 @@ export function PixelBuddy() {
   /* Clicking (poking) him — too many pokes make him angry. */
   const poke = () => {
     const now = performance.now();
-    if (now < drinkUntil.current) return;
+    if (now < drinkUntil.current || battle.current) return;
     pokes.current = [...pokes.current.filter((t) => now - t < 2600), now];
     const count = pokes.current.length;
     setJump((j) => j + 1);
@@ -731,6 +935,7 @@ export function PixelBuddy() {
       return;
     }
     if (mode.current === "working") { feel("annoyed", 1400); say(pick(WORK_POKE)); return; }
+    if (mode.current === "watching") { feel("annoyed", 1400); say(pick(WATCH_POKE)); return; }
     target.current = null;
     feel("happy", 2000);
     say(CLICK_LINES[clickCount.current % CLICK_LINES.length], true);
@@ -739,7 +944,7 @@ export function PixelBuddy() {
 
   /* Picking him up with the cursor. */
   const onBuddyDown = (event: React.PointerEvent<HTMLButtonElement>) => {
-    if (event.button !== 0 || performance.now() < drinkUntil.current) return;
+    if (event.button !== 0 || performance.now() < drinkUntil.current || battle.current) return;
     event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
     const rect = root.current?.getBoundingClientRect();
@@ -756,6 +961,7 @@ export function PixelBuddy() {
     if (!g.active && Math.hypot(event.clientX - g.startX, event.clientY - g.startY) > 6) {
       g.active = true;
       if (mode.current === "working") { stopWorking(); say("Hey! I was working!"); }
+      else if (mode.current === "watching") say("Noo, the movie!");
       else say(pick(HELD_LINES));
       mode.current = "held";
       target.current = null;
@@ -795,6 +1001,59 @@ export function PixelBuddy() {
   const onBuddyKey = (event: React.MouseEvent<HTMLButtonElement>) => {
     if (event.detail === 0) poke(); // keyboard activation
   };
+
+  /* ── Boss battle controls ── */
+  const summonBoss = useCallback(() => {
+    if (battle.current || !ready) return;
+    const now = performance.now();
+    if (mode.current === "working") stopWorking();
+    mode.current = "battle";
+    goingToTv.current = false;
+    goingToDesk.current = false;
+    target.current = null;
+    angryUntil.current = 0;
+    updateItems([]);
+    document.documentElement.classList.remove("buddy-grabbing");
+    const c = canvas.current;
+    if (c) { c.width = window.innerWidth; c.height = window.innerHeight; }
+    battle.current = new BossBattle(now, window.innerWidth, window.innerHeight, reduced.current);
+    setHud(battle.current.snapshot(now));
+  }, [ready, stopWorking, updateItems]);
+  const castSkill = useCallback((skill: Skill) => { battle.current?.use(skill, performance.now()); }, []);
+  const flee = useCallback(() => { battle.current?.flee(performance.now()); }, []);
+  const closeBattle = useCallback(() => { if (battle.current) battle.current.ended = true; }, []);
+  const retryBattle = useCallback(() => {
+    if (battle.current) battle.current.ended = true;
+    window.setTimeout(summonBoss, 80);
+  }, [summonBoss]);
+  const onBossClick = (event: React.MouseEvent<HTMLDivElement>) => { battle.current?.poke(event.clientX, event.clientY, performance.now()); };
+
+  // Keyboard: 1–5 skills, Esc to run away.
+  useEffect(() => {
+    if (!hud) return;
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) return;
+      const map: Record<string, Skill> = { "1": "punch", "2": "orb", "3": "beam", "4": "shield", "5": "ultimate" };
+      if (map[event.key]) { event.preventDefault(); castSkill(map[event.key]); }
+      else if (event.key === "Escape") flee();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [hud !== null, castSkill, flee]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Keep the effects canvas sized to the viewport during a fight.
+  useEffect(() => {
+    if (!hud) return;
+    const fit = () => {
+      const c = canvas.current;
+      if (c) { c.width = window.innerWidth; c.height = window.innerHeight; }
+      battle.current?.resize(window.innerWidth, window.innerHeight);
+    };
+    fit();
+    window.addEventListener("resize", fit);
+    return () => window.removeEventListener("resize", fit);
+  }, [hud !== null]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* Drag & drop treats from the snack tray (mouse + touch). */
   const onTreatDown = (kind: Treat) => (event: React.PointerEvent<HTMLButtonElement>) => {
@@ -854,7 +1113,27 @@ export function PixelBuddy() {
           </button>
         ))}
         <span className="snack-tray-hint" aria-hidden="true">DRAG ME ↙</span>
+        <span className="snack-tray-divider" aria-hidden="true" />
+        <button type="button" className="summon-btn" onClick={summonBoss} disabled={!!hud} aria-label="Summon the final boss bug and fight it" title="Summon the final boss!">
+          <svg viewBox="0 0 12 10" shapeRendering="crispEdges" aria-hidden="true">
+            <path d="M3 0h1v1h1v1h2V1h1V0h1v1H8v1h1v1h1v1h2v1h-2v1h2v1h-2v1H9v1H8v1H4V9H3V8H2V7H0V6h2V5H0V4h2V3h1V2h1V1H3z" fill="#9a3cb5" />
+            <path d="M4 3h1v1H4zM7 3h1v1H7z" fill="#ff3b3b" />
+          </svg>
+          <span>BOSS</span>
+        </button>
       </div>
+
+      {hud && (
+        <>
+          <div className={`battle-arena ${bossEnraged ? "is-enraged" : ""}`} aria-hidden="true" />
+          <canvas ref={canvas} className="battle-canvas" aria-hidden="true" />
+          <div ref={bossEl} className={`boss ${bossEnraged ? "is-enraged" : ""}`} onClick={onBossClick} role="presentation" title="Click to hit the bug!">
+            {bossLine && <div className="boss-bubble">{bossLine}</div>}
+            <BossSprite enraged={bossEnraged} />
+          </div>
+          <BattleHud hud={hud} onSkill={castSkill} onFlee={flee} onRetry={retryBattle} onClose={closeBattle} />
+        </>
+      )}
 
       {drag && (
         <div className="treat-ghost" style={{ transform: `translate3d(${drag.x - 18}px, ${drag.y - 18}px, 0)` }} aria-hidden="true">
@@ -862,7 +1141,7 @@ export function PixelBuddy() {
         </div>
       )}
 
-      <div className={`buddy-desk ${working ? "is-on" : ""}`} style={{ left: deskX }} aria-hidden="true">
+      <div className={`buddy-desk ${working ? "is-on" : ""} ${hud ? "is-hidden" : ""}`} style={{ left: deskX }} aria-hidden="true">
         <Desk on={working} />
       </div>
 
@@ -876,7 +1155,8 @@ export function PixelBuddy() {
 
       <div ref={shadow} className="buddy-ground-shadow" aria-hidden="true" />
 
-      <div ref={root} className={`pixel-buddy mood-${emotion}`}>
+      <div ref={root} className={`pixel-buddy mood-${emotion} ${powered ? "is-powered" : ""}`}>
+        {powered && <span className="buddy-aura" aria-hidden="true"><i /><i /><i /></span>}
         {bubble && (
           <div className={`buddy-bubble ${nearRight ? "align-right" : ""} ${emotion === "angry" ? "is-angry" : ""}`} role="status" aria-live="polite">
             <span aria-hidden="true">{typed}</span>
@@ -899,7 +1179,7 @@ export function PixelBuddy() {
             <span key={jump} className={`buddy-jump ${jump ? "is-jumping" : ""}`}>
               <span className="buddy-mood">
                 <span className={`buddy-flip ${pose === "step" && !running ? "is-bob" : ""} ${running ? "is-running" : ""}`} style={{ transform: `scaleX(${facing})` }}>
-                  <Sprite pose={pose} emotion={emotion} blink={blink} talking={talking} held={held} />
+                  <Sprite pose={pose} emotion={emotion} blink={blink} talking={talking} held={held} powered={powered} />
                 </span>
               </span>
             </span>
