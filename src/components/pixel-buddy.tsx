@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { BattleHud, BossBattle, BossSprite, type HeroView, type HudSnapshot, type Skill } from "./buddy-battle";
+import { BOSS_IDS, BattleHud, BossBattle, BossSprite, type BossId, type HeroView, type HudSnapshot, type Skill } from "./buddy-battle";
 
 /* ─────────────────────────────────────────────────────────────
    Pixel Eric — an 8-bit avatar that lives at the bottom of the
@@ -419,6 +419,9 @@ export function PixelBuddy() {
   const [powered, setPowered] = useState(false);
   const [bossLine, setBossLine] = useState("");
   const [bossEnraged, setBossEnraged] = useState(false);
+  const [bossId, setBossId] = useState<BossId>("bug");
+  const bgCanvas = useRef<HTMLCanvasElement>(null);
+  const lastBoss = useRef<BossId | null>(null);
 
   const battle = useRef<BossBattle | null>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -497,7 +500,7 @@ export function PixelBuddy() {
     if (b) {
       // Mid-fight a treat is an instant power-up instead of a snack on the floor.
       const w = buddyWidth(root.current);
-      b.treat(kind, x.current + w / 2, y.current + buddyHeight(root.current) * 0.6, performance.now());
+      b.treat(kind, x.current + w / 2, y.current + buddyHeight(root.current) * 0.6);
       say(kind === "coffee" ? "Coffee! HP restored!" : "Liquid courage!! Energy up!");
       return;
     }
@@ -558,6 +561,7 @@ export function PixelBuddy() {
     let nextHud = 0;
     let lastEnraged = false;
     const pixelFont = getComputedStyle(document.body).getPropertyValue("--font-pixel").trim() || "monospace";
+    const monoFont = getComputedStyle(document.body).getPropertyValue("--font-mono").trim() || "monospace";
     const battleIO = {
       say: (text: string) => say(text),
       feel: (e: "fierce" | "happy" | "scared" | "dizzy" | "excited" | "neutral", ms: number) => feel(e, ms),
@@ -580,6 +584,10 @@ export function PixelBuddy() {
       target.current = null;
       pauseUntil.current = now + 1500;
       canvas.current?.getContext("2d")?.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      bgCanvas.current?.getContext("2d")?.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      document.documentElement.classList.remove("boss-active", "boss-rage", "boss-glitch", ...BOSS_IDS.map((id) => `boss-${id}`));
+      document.documentElement.classList.add("boss-clear");
+      window.setTimeout(() => document.documentElement.classList.remove("boss-clear"), 900);
       if (emotionRef.current === "dizzy" || emotionRef.current === "fierce") feel("neutral", 10);
     };
     const setPoseOnce = (p: Pose) => { if (p !== lastPose) { lastPose = p; setPose(p); } };
@@ -644,7 +652,9 @@ export function PixelBuddy() {
         setRunningOnce(false);
         setWorkingOnce(false);
         const ctx = canvas.current?.getContext("2d");
-        const off = ctx ? b.draw(ctx, hero, now, pixelFont) : { sx: 0, sy: 0 };
+        const bgCtx = bgCanvas.current?.getContext("2d");
+        if (bgCtx) b.drawBackground(bgCtx, now, monoFont);
+        const off = ctx ? b.draw(ctx, hero, now, pixelFont, monoFont) : { sx: 0, sy: 0 };
         if (el) {
           el.style.transform = `translate3d(${x.current + off.sx}px, ${-y.current + off.sy}px, 0)`;
           const st = `b-${hero.state}`;
@@ -655,6 +665,7 @@ export function PixelBuddy() {
           be.style.transform = `translate3d(${b.bossX + off.sx}px, ${-b.bossY + off.sy}px, 0)`;
           be.dataset.v = `${b.bossFrame}${b.mouth ? 1 : 0}`;
           be.classList.toggle("is-hit", now < b.bossHitUntil);
+          be.classList.toggle("is-glitch", now < b.glitchUntil);
           be.classList.toggle("is-visible", b.bossVisible && !b.bossDead);
           be.classList.toggle("is-dying", b.phase === "victory");
         }
@@ -664,7 +675,15 @@ export function PixelBuddy() {
           shadow.current.style.opacity = String(0.2 + 0.35 * k);
         }
         if (now > nextHud) { nextHud = now + 90; setHud(b.snapshot(now)); }
-        if (b.enraged !== lastEnraged) { lastEnraged = b.enraged; setBossEnraged(b.enraged); }
+        if (b.enraged !== lastEnraged) {
+          lastEnraged = b.enraged;
+          setBossEnraged(b.enraged);
+          document.documentElement.classList.toggle("boss-rage", b.enraged);
+          if (b.enraged) {
+            document.documentElement.classList.add("boss-glitch");
+            window.setTimeout(() => document.documentElement.classList.remove("boss-glitch"), 900);
+          }
+        }
         if (b.ended) endBattle(now);
         frame = requestAnimationFrame(tick);
         return;
@@ -1016,7 +1035,15 @@ export function PixelBuddy() {
     document.documentElement.classList.remove("buddy-grabbing");
     const c = canvas.current;
     if (c) { c.width = window.innerWidth; c.height = window.innerHeight; }
-    battle.current = new BossBattle(now, window.innerWidth, window.innerHeight, reduced.current);
+    const options = BOSS_IDS.filter((id) => id !== lastBoss.current);
+    const id = options[Math.floor(Math.random() * options.length)];
+    lastBoss.current = id;
+    setBossId(id);
+    const html = document.documentElement;
+    html.classList.remove("boss-clear", "boss-rage", ...BOSS_IDS.map((b) => `boss-${b}`));
+    html.classList.add("boss-active", `boss-${id}`, "boss-glitch");
+    window.setTimeout(() => html.classList.remove("boss-glitch"), 1000);
+    battle.current = new BossBattle(now, window.innerWidth, window.innerHeight, reduced.current, id);
     setHud(battle.current.snapshot(now));
   }, [ready, stopWorking, updateItems]);
   const castSkill = useCallback((skill: Skill) => { battle.current?.use(skill, performance.now()); }, []);
@@ -1046,8 +1073,7 @@ export function PixelBuddy() {
   useEffect(() => {
     if (!hud) return;
     const fit = () => {
-      const c = canvas.current;
-      if (c) { c.width = window.innerWidth; c.height = window.innerHeight; }
+      for (const c of [canvas.current, bgCanvas.current]) if (c) { c.width = window.innerWidth; c.height = window.innerHeight; }
       battle.current?.resize(window.innerWidth, window.innerHeight);
     };
     fit();
@@ -1125,11 +1151,12 @@ export function PixelBuddy() {
 
       {hud && (
         <>
-          <div className={`battle-arena ${bossEnraged ? "is-enraged" : ""}`} aria-hidden="true" />
+          <div className={`battle-arena arena-${bossId} ${bossEnraged ? "is-enraged" : ""}`} aria-hidden="true"><i className="arena-vignette" /><i className="arena-scan" /></div>
+          <canvas ref={bgCanvas} className="battle-bg-canvas" aria-hidden="true" />
           <canvas ref={canvas} className="battle-canvas" aria-hidden="true" />
-          <div ref={bossEl} className={`boss ${bossEnraged ? "is-enraged" : ""}`} onClick={onBossClick} role="presentation" title="Click to hit the bug!">
+          <div ref={bossEl} className={`boss boss-${bossId} ${bossEnraged ? "is-enraged" : ""}`} onClick={onBossClick} role="presentation" title="Click to hit the bug!">
             {bossLine && <div className="boss-bubble">{bossLine}</div>}
-            <BossSprite enraged={bossEnraged} />
+            <BossSprite boss={bossId} enraged={bossEnraged} />
           </div>
           <BattleHud hud={hud} onSkill={castSkill} onFlee={flee} onRetry={retryBattle} onClose={closeBattle} />
         </>
